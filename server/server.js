@@ -15,23 +15,25 @@ app.use((req, res, next) => {
 // Parse application/x-www-form-urlencoded (forms)
 app.use(express.urlencoded({ extended: false }));
 
-// Serve arquivos estáticos (css, js, assets)
-app.use(express.static(path.join(__dirname, '..', 'public')));
-
-// Middleware para proteger /html/*: verifica cookie antes de servir
-// Deve vir APÓS o static serve para não bloquear assets, mas ANTES das rotas dinâmicas
-app.get('/html/*', (req, res, next) => {
-  const cookie = req.headers.cookie || '';
-  const isLoggedIn = cookie.split(';').some(c => c.trim().startsWith('logado='));
-  if (!isLoggedIn) {
-    console.log('Acesso negado a /html (sem autenticação):', req.url);
+// MIDDLEWARE DE PROTEÇÃO: deve vir ANTES do static para bloquear /html/*
+app.use((req, res, next) => {
+  // Bloqueia acesso a /html/* se não estiver autenticado
+  if (req.path.startsWith('/html/') || req.path === '/html') {
+    const cookie = req.headers.cookie || '';
+    const isLoggedIn = cookie.split(';').some(c => c.trim().startsWith('logado='));
+    if (!isLoggedIn) {
+      console.log('Acesso negado a', req.path, '(sem autenticação)');
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      return res.status(401).redirect('/?unauthorized=1');
+    }
+    // Usuário autenticado: evita cache
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-    return res.status(401).redirect('/');
   }
-  // Permite acesso e evita cache de páginas protegidas
-  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
   next();
 });
+
+// Serve arquivos estáticos (css, js, assets, HTML) - protegido acima para /html/*
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // Rota para processar login via form POST
 app.post('/login', (req, res) => {
