@@ -15,13 +15,15 @@ app.use((req, res, next) => {
 // Parse application/x-www-form-urlencoded (forms)
 app.use(express.urlencoded({ extended: false }));
 
-// Protege rotas estáticas dentro de /html: só serve se cookie 'logado' presente
-app.get('/html/*', (req, res) => {
+// Middleware para proteger /html/*: verifica cookie antes de servir
+app.use('/html', (req, res, next) => {
   const cookie = req.headers.cookie || '';
-  const has = cookie.split(';').some(c => c.trim().startsWith('logado='));
-  if (!has) return res.redirect('/');
-  const reqPath = req.path.replace(/^\/html\//, '');
-  return res.sendFile(path.join(__dirname, '..', 'public', 'html', reqPath));
+  const isLoggedIn = cookie.split(';').some(c => c.trim().startsWith('logado='));
+  if (!isLoggedIn) {
+    console.log('Acesso negado a /html (sem autenticação):', req.path);
+    return res.redirect('/');
+  }
+  next();
 });
 
 // Serve arquivos estáticos da pasta public
@@ -35,9 +37,22 @@ app.post('/login', (req, res) => {
 
   // Credenciais fixas (apenas para demo local)
   if (username === 'Maria Pateis' && password === 'UpConsult@25') {
-    // Define cookie não httpOnly para que o cliente possa ler (ambiente dev)
-    res.cookie('logado', 'true', { maxAge: 24 * 60 * 60 * 1000, httpOnly: false, path: '/' });
-    return res.redirect('/html/app.html');
+    // Define cookie com opções para melhorar compatibilidade com gerenciador de senhas
+    res.cookie('logado', 'true', {
+      maxAge: 24 * 60 * 60 * 1000,
+      httpOnly: false,
+      path: '/',
+      sameSite: 'lax'
+    });
+    // Pequeno delay para permitir que o navegador ofereça salvar a senha
+    return res.status(200).send(`
+      <html>
+        <head><meta charset='UTF-8'><title>Autenticando...</title></head>
+        <body style='display:none'>
+          <script>setTimeout(() => window.location='/html/app.html', 500);</script>
+        </body>
+      </html>
+    `);
   }
 
   // Falha: redireciona para a página de login com query
