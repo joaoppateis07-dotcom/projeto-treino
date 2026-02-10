@@ -15,6 +15,15 @@ app.use((req, res, next) => {
 // Parse application/x-www-form-urlencoded (forms)
 app.use(express.urlencoded({ extended: false }));
 
+// Protege rotas estáticas dentro de /html: só serve se cookie 'logado' presente
+app.get('/html/*', (req, res) => {
+  const cookie = req.headers.cookie || '';
+  const has = cookie.split(';').some(c => c.trim().startsWith('logado='));
+  if (!has) return res.redirect('/');
+  const reqPath = req.path.replace(/^\/html\//, '');
+  return res.sendFile(path.join(__dirname, 'public', 'html', reqPath));
+});
+
 // Serve arquivos estáticos da pasta public
 app.use(express.static(path.join(__dirname, 'public')));
 
