@@ -15,24 +15,26 @@ app.use((req, res, next) => {
 // Parse application/x-www-form-urlencoded (forms)
 app.use(express.urlencoded({ extended: false }));
 
-// MIDDLEWARE DE PROTEÇÃO: deve vir ANTES do static para bloquear /html/*
+// MIDDLEWARE GLOBAL: protege /html/* ANTES do express.static()
 app.use((req, res, next) => {
-  // Bloqueia acesso a /html/* se não estiver autenticado
-  if (req.path.startsWith('/html/') || req.path === '/html') {
+  // Se a requisição é para /html/*, verifica autenticação
+  if (req.path.startsWith('/html/')) {
     const cookie = req.headers.cookie || '';
-    const isLoggedIn = cookie.split(';').some(c => c.trim().startsWith('logado='));
+    const isLoggedIn = cookie.includes('logado=true');
+    
     if (!isLoggedIn) {
-      console.log('Acesso negado a', req.path, '(sem autenticação)');
+      console.log('❌ BLOQUEADO:', req.method, req.path, '- sem cookie "logado=true"');
       res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
       return res.status(401).redirect('/?unauthorized=1');
     }
-    // Usuário autenticado: evita cache
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    console.log('✓ Permitido:', req.method, req.path);
   }
   next();
 });
 
-// Serve arquivos estáticos (css, js, assets, HTML) - protegido acima para /html/*
+// Serve arquivos estáticos (css, js, assets, HTML) - /html/* protegido acima
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Rota para processar login via form POST

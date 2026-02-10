@@ -1,9 +1,6 @@
-// Garante que somente usuários autenticados vejam o app
+// Verificação adicional no cliente: limpa qualquer dados locais
+// (A proteção REAL é no servidor via cookie autenticado)
 (function() {
-  // Verifica cookie 'logado' ou fallback para localStorage
-  const hasCookie = document.cookie.split(';').some(c => c.trim().startsWith('logado='));
-  const hasStorage = localStorage.getItem('logado') === 'true';
-  if (!hasCookie && !hasStorage) {
-    window.location = "../index.html";
-  }
+  localStorage.removeItem('logado');
+  localStorage.removeItem('savedCredentials');
 })();
