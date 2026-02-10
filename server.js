@@ -16,7 +16,7 @@ app.use((req, res, next) => {
 app.use(express.urlencoded({ extended: false }));
 
 // Serve arquivos estáticos da pasta public
-app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Rota para processar login via form POST
 app.post('/login', (req, res) => {
