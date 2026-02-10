@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login</title>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <main class="page">
+    <section class="card">
+      <div class="logo-area">
+        <!-- Logo do usuário (PNG) -->
+        <img class="logo" src="./asset/logo.png" alt="UP Consultoria Previdenciária" onerror="this.style.display='none'; this.parentElement.classList.add('no-logo');">
+        <!-- SVG fallback (apenas em caso extremo) -->
+        <svg class="logo-svg" width="120" height="120" viewBox="0 0 100 100" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" role="img">
+          <title>UP</title>
+          <circle cx="50" cy="50" r="48" fill="#111" />
+          <text x="50" y="58" text-anchor="middle" fill="#d4af37" font-family="Arial, sans-serif" font-size="40" font-weight="700">UP</text>
+        </svg>
+        <div class="subtitle">Consultoria Previdenciária</div>
+      </div>
+
+      <form id="entrar" method="post" action="/login" autocomplete="on">
+        <div class="field">
+          <label class="label" for="usuario">Usuário:</label>
+          <input class="input" id="usuario" name="username" type="text" placeholder="Insira seu usuário" autocomplete="username" required />
+        </div>
+
+        <div class="field">
+          <label class="label" for="senha">Senha:</label>
+          <input class="input" id="senha" name="password" type="password" placeholder="Insira sua senha" autocomplete="current-password" required />
+        </div>
+
+        <p id="msg" class="hint"></p>
+
+        <button class="btn" id="loginBtn" type="submit">LOGIN</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="js/login.js"></script>
+</body>
+</html>
