@@ -56,6 +56,14 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// SPA fallback: para qualquer GET que aceite HTML, retorna index.html
+app.get(/^\/.*/, (req, res) => {
+  if (req.method === 'GET' && req.headers.accept && req.headers.accept.includes('text/html')) {
+    return res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  }
+  return res.status(404).end();
+});
+
 app.listen(PORT, () => {
   console.log(`Server rodando na porta ${PORT}`);
 });
