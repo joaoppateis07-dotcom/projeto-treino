@@ -15,19 +15,23 @@ app.use((req, res, next) => {
 // Parse application/x-www-form-urlencoded (forms)
 app.use(express.urlencoded({ extended: false }));
 
+// Serve arquivos estáticos (css, js, assets)
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Middleware para proteger /html/*: verifica cookie antes de servir
-app.use('/html', (req, res, next) => {
+// Deve vir APÓS o static serve para não bloquear assets, mas ANTES das rotas dinâmicas
+app.get('/html/*', (req, res, next) => {
   const cookie = req.headers.cookie || '';
   const isLoggedIn = cookie.split(';').some(c => c.trim().startsWith('logado='));
   if (!isLoggedIn) {
-    console.log('Acesso negado a /html (sem autenticação):', req.path);
-    return res.redirect('/');
+    console.log('Acesso negado a /html (sem autenticação):', req.url);
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    return res.status(401).redirect('/');
   }
+  // Permite acesso e evita cache de páginas protegidas
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
   next();
 });
-
-// Serve arquivos estáticos da pasta public
-app.use(express.static(path.join(__dirname, 'public')));
 
 // Rota para processar login via form POST
 app.post('/login', (req, res) => {
@@ -44,12 +48,27 @@ app.post('/login', (req, res) => {
       path: '/',
       sameSite: 'lax'
     });
-    // Pequeno delay para permitir que o navegador ofereça salvar a senha
+    // Delay maior para gerenciador de senhas oferecer salvar (1.2s)
     return res.status(200).send(`
-      <html>
-        <head><meta charset='UTF-8'><title>Autenticando...</title></head>
-        <body style='display:none'>
-          <script>setTimeout(() => window.location='/html/app.html', 500);</script>
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+        <head>
+          <meta charset='UTF-8'>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Autenticando...</title>
+          <style>
+            body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5; }
+            .loading { text-align: center; }
+            .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #333; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+          </style>
+        </head>
+        <body>
+          <div class="loading">
+            <div class="spinner"></div>
+            <p>Autenticando...</p>
+          </div>
+          <script>setTimeout(() => { window.location='/html/app.html'; }, 1200);</script>
         </body>
       </html>
     `);
