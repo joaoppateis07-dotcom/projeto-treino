@@ -2,17 +2,26 @@
   "name": "projeto-treino",
   "version": "1.0.0",
   "description": "",
+  "keywords": [],
+  "homepage": "https://github.com/joaoppateis07-dotcom/projeto-treino#readme",
+  "bugs": {
+    "url": "https://github.com/joaoppateis07-dotcom/projeto-treino/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joaoppateis07-dotcom/projeto-treino.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "express": "^5.2.1",
     "sqlite3": "^5.1.7"
-  }
+  },
+  "devDependencies": {}
 }
