@@ -4,18 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>App</title>
-  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/app.css">
 </head>
 
 <body>
-  <main class="page">
-    <section class="card">
-      <h1 class="brand">Bem-vindo</h1>
-      <p class="hint">Você está logado no aplicativo.</p>
-      <a class="btn" href="/logout">Sair</a>
+  <main class="app">
+    <section id="tela-dashboard">
+      <h1>DASHBOARD</h1>
+        <button class="btn" id="btnIrParaFuncionario" type="button">Ir para Funcionário</button>
+    </section>
+    <section id="tela-funcionario" class="hidden">
+      <h1>FUNCIONARIO</h1>
+      <button class="btn" id="btnVoltarDashboard" type="button">VOLTAR</button>
     </section>
   </main>
+  <div id="modalNovaPasta" class="modal hidden">
 
-  <script src="../js/auth.js"></script>
+  </div>
+  <div id="modalUpload" class="modal hidden">
+
+  </div>
+
+  <script src="../js/app.js"></script>
 </body>
 </html>
