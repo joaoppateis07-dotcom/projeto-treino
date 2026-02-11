@@ -1,0 +1,21 @@
+.hidden {
+    display: none;
+}
+.stats {
+    display: flex;
+    gap: 20px;
+}
+ /*card de contador*/
+.card {
+    background: #1f1f1dfb;
+    padding: 20px;
+    border-radius: 10px;
+    width: 500px;
+    box-shadow: 3px 10px 25px rgba(252, 172, 1, 0.304);
+}
+/*fundo*/
+body {
+    background: rgb(0, 0, 0);
+    color: white;
+}
+
