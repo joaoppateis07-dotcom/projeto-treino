@@ -12,7 +12,7 @@
     border-radius: 10px;
     width: 500px;
     box-shadow: 3px 10px 25px rgba(252, 172, 1, 0.304);
-    transition: transform 0.5s;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 /*fundo*/
 body {
