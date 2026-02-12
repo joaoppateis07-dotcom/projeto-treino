@@ -1,8 +1,11 @@
 .hidden {
     display: none;
 }
+.container {
+    
+}
 .stats {
-    display: flex;
+    display: grid;
     gap: 20px;
 }
  /*card de contador*/
