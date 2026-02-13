@@ -1,6 +1,7 @@
 .hidden {
-    display: none;
+  display: none !important;
 }
+
 .container {
     max-width: 1600px;
     padding: 20px 15px;
@@ -66,6 +67,13 @@ body {
   width: 100%;
   max-width: 420px;
 }
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
 .btn {
     background: rgb(200, 144, 1);
     padding: 10px 20px;
