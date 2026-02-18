@@ -59,7 +59,7 @@ body {
     justify-content: center;
     z-index: 1000;
 }
-#modalNovaPasta .modal-box {
+.modal-box {
   background: rgb(59, 56, 51);
   padding: 35px;
   border-radius: 20px;
