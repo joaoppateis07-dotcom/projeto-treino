@@ -69,6 +69,10 @@ body {
   backdrop-filter: blur(6px);
 }
 
+#modalNovaPasta {
+    backdrop-filter: blur(6px);
+} 
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;
