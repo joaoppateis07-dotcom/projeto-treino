@@ -66,13 +66,20 @@ body {
   box-shadow: 3px 10px 25px rgba(252, 172, 1, 0.304);
   width: 100%;
   max-width: 420px;
+  backdrop-filter: blur(6px);
 }
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   margin-top: 15px;
-  position: fixed; inset: 0
+  position: fixed; inset: 0;
+  max-width: 520px;
+  width: 92vw[];
+  padding: 28px;
+  border-radius: 18px;
+
 }
 
 .btn {
@@ -86,7 +93,7 @@ body {
 }
 
 .btnCancelarPasta {
-    background: rgba(248, 29, 29, 0.669);
+    background: rgba(248, 29, 29, 0.347);
 }
 
 .input {
