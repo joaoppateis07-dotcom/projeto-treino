@@ -61,7 +61,7 @@ body {
     backdrop-filter: blur(6px);
 }
 .modal-box {
-  background: #2f2d2a;
+  background: #3e3e3e;
   padding: 35px;
   border-radius: 20px;
   box-shadow: 3px 10px 25px rgba(252, 172, 1, 0.20);
@@ -152,5 +152,13 @@ body {
     text-align: center;
     font-family: 'Montserrat', sans-serif;
     margin-bottom: 18px;
+}
+
+#containerCampos {
+    align-items: center;
+    width: 80%;
+    flex-direction: column;
+    display: flex;
+    gap: 18px;
 }
 
