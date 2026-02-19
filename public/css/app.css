@@ -60,7 +60,7 @@ body {
     z-index: 1000;
 }
 .modal-box {
-  background: rgb(59, 56, 51);
+  background: rgb(61, 61, 61);
   padding: 35px;
   border-radius: 20px;
   box-shadow: 3px 10px 25px rgba(252, 172, 1, 0.20);
@@ -113,7 +113,7 @@ body {
     border-radius: 10px;
     padding: 7px 14px;
     border: none;
-    background: rgb(84, 77, 77);
+    background: rgb(94, 94, 94);
     margin: 0 auto;
     margin-bottom: 18px;
 }
@@ -122,7 +122,7 @@ body {
     border-radius: 10px;
     padding: 7px 14px;
     border: none;
-    background: rgb(84, 77, 77);
+    background: rgb(94, 94, 94);
     margin: 0 auto;
     margin-bottom: 18px;
 }
@@ -137,7 +137,7 @@ body {
     border-radius: 10px;
     padding: 7px 14px;
     border: none;
-    background: rgb(84, 77, 77);
+    background: rgb(94, 94, 94);
     
     margin-bottom: 18px;
 }
@@ -146,8 +146,20 @@ body {
     border-radius: 10px;
     padding: 7px 14px;
     border: none;
-    background: rgb(84, 77, 77);
+    background: rgb(94, 94, 94);
     margin: 0 auto;
+    margin-bottom: 18px;
+}
+
+#tituloRhDocumentos {
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    margin-bottom: 18px;
+}
+
+#sistemaDeGestaoDeDocumentos {
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
     margin-bottom: 18px;
 }
 
