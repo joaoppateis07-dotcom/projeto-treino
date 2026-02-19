@@ -10,4 +10,9 @@ export function initModalNovaPasta() {
     btnCancelarPasta.addEventListener('click', () => {
         modalNovaPasta.classList.add('hidden');
     });
+
+    const btnCriarPasta = document.getElementById('btnCriarPasta');
+    btnCriarPasta.addEventListener('click', () => {
+        console.log('clicou e criou')
+    })
 }
