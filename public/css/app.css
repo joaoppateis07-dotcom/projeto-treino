@@ -58,9 +58,10 @@ body {
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    backdrop-filter: blur(6px);
 }
 .modal-box {
-  background: rgb(61, 61, 61);
+  background: #2f2d2a;
   padding: 35px;
   border-radius: 20px;
   box-shadow: 3px 10px 25px rgba(252, 172, 1, 0.20);
@@ -68,10 +69,6 @@ body {
   max-width: 420px;
   backdrop-filter: blur(6px);
 }
-
-#modalNovaPasta {
-    backdrop-filter: blur(6px);
-} 
 
 .modal-actions {
   display: flex;
@@ -100,21 +97,13 @@ body {
     background: rgba(248, 29, 29, 0.347);
 }
 
-.text {
-    border-radius: 10px;
-    padding: 7px 14px;
-    border: none;
-    background: rgb(84, 77, 77);
-    margin: 0 auto;
-    margin-bottom: 18px;
-}
-
 #inputNomePasta {
     border-radius: 10px;
     padding: 7px 14px;
     border: none;
-    background: rgb(94, 94, 94);
+    background: rgb(161, 161, 161);
     margin: 0 auto;
+    width: 50%;
     margin-bottom: 18px;
 }
 
@@ -125,6 +114,7 @@ body {
     background: rgb(94, 94, 94);
     margin: 0 auto;
     margin-bottom: 18px;
+    width: 50%;
 }
 
 #tituloModalNovaPasta {
@@ -138,7 +128,7 @@ body {
     padding: 7px 14px;
     border: none;
     background: rgb(94, 94, 94);
-    
+    width: 50%;
     margin-bottom: 18px;
 }
 
@@ -149,6 +139,7 @@ body {
     background: rgb(94, 94, 94);
     margin: 0 auto;
     margin-bottom: 18px;
+    width: 50%;
 }
 
 #tituloRhDocumentos {
