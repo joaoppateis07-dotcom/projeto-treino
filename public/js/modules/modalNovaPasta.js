@@ -12,7 +12,34 @@ export function initModalNovaPasta() {
     });
 
     const btnCriarPasta = document.getElementById('btnCriarPasta');
+    const NomePasta = document.getElementById('inputNomePasta');
+    const CpfFFuncionario = document.getElementById('inputCpfFFuncionario');
+    const Cargo = document.getElementById('selectCargo');
+    const Setor = document.getElementById('selectSetor');
+
     btnCriarPasta.addEventListener('click', () => {
-        console.log('clicou e criou')
-    })
+       if (NomePasta.value == '') {
+           alert('preencha o nome da pasta');
+           return
+       }
+        if (CpfFFuncionario.value == '') {
+            alert('preencha o cpf do funcionário');
+            return
+        }
+        if (Cargo.value == '__') {
+            alert('selecione um cargo');
+            return
+        }
+        if (Setor.value == '__') {
+            alert('selecione um setor');
+            return
+        }
+        alert('pasta criada com sucesso!!')
+        NomePasta.value = '';
+        CpfFFuncionario.value = '';
+        Cargo.value = '__';
+        Setor.value = '__';
+        modalNovaPasta.classList.add('hidden');
+
+    });
 }
