@@ -109,6 +109,15 @@ body {
     margin-bottom: 18px;
 }
 
+.input {
+    border-radius: 10px;
+    padding: 7px 14px;
+    border: none;
+    background: rgb(84, 77, 77);
+    margin: 0 auto;
+    margin-bottom: 18px;
+}
+
 #inputCpfFFuncionario {
     border-radius: 10px;
     padding: 7px 14px;
@@ -124,4 +133,11 @@ body {
     margin-bottom: 18px;
 }
 
-
+.select {
+    border-radius: 10px;
+    padding: 7px 14px;
+    border: none;
+    background: rgb(84, 77, 77);
+    margin: 0 auto;
+    margin-bottom: 18px;
+}
