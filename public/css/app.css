@@ -109,7 +109,7 @@ body {
     margin-bottom: 18px;
 }
 
-.input {
+#inputNomePasta {
     border-radius: 10px;
     padding: 7px 14px;
     border: none;
@@ -133,7 +133,7 @@ body {
     margin-bottom: 18px;
 }
 
-.select {
+#selectFuncionario {
     border-radius: 10px;
     padding: 7px 14px;
     border: none;
@@ -141,3 +141,4 @@ body {
     margin: 0 auto;
     margin-bottom: 18px;
 }
+
