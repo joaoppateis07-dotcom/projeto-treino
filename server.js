@@ -1,5 +1,18 @@
 const sqlite3 = require("sqlite3").verbose();
-new sqlite3.Database("db.sqlite");
+const db = new sqlite3.Database("db.sqlite");
+db.run(
+  `CREATE TABLE IF NOT EXISTS pastas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    cpf TEXT NOT NULL,
+    cargo TEXT NOT NULL,
+    setor TEXT NOT NULL
+  )`,
+  (err) => {
+    if (err) console.log("Erro criando tabela:", err.message);
+    else console.log("Tabela 'pastas' pronta ✅");
+  }
+);
 const express = require("express");
 const path = require("path");
 
