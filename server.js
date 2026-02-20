@@ -17,6 +17,7 @@ const express = require("express");
 const path = require("path");
 
 const app = express();
+app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
 // logging simples de todas as requisições para diagnóstico
@@ -122,6 +123,31 @@ app.get(/^\/.*/, (req, res) => {
     return res.sendFile(path.join(__dirname, 'public', 'index.html'));
   }
   return res.status(404).end();
+});
+
+app.post("/pastas", (req, res) => {
+  const { nome, cpf, cargo, setor } = req.body;
+
+  if (!nome || !cpf || !cargo || !setor) {
+    return res.status(400).json({ error: "Dados incompletos" });
+  }
+
+  db.run(
+    "INSERT INTO pastas (nome, cpf, cargo, setor) VALUES (?, ?, ?, ?)",
+    [nome, cpf, cargo, setor],
+    function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+
+      res.status(201).json({ id: this.lastID, nome, cpf, cargo, setor });
+    }
+  );
+});
+
+app.get("/pastas", (req, res) => {
+  db.all("SELECT * FROM pastas ORDER BY id DESC", (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
 });
 
 app.listen(PORT, () => {
