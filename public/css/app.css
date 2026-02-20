@@ -25,7 +25,7 @@
 
  /*card de contador*/
 .card {
-    background: #1f1f1dfb;
+    background: #2d2d2dfb;
     padding: 50px;
     border-radius: 20px;
     box-shadow: 3px 10px 25px rgba(252, 172, 1, 0.304);
@@ -167,7 +167,7 @@ body {
 
 .pasta {
     background: #414141fb;  
-    padding: 20px;
+    padding: 40px 20px;
     border-radius: 10px;
     margin-top: 18px;
     box-shadow: 3px 10px 25px rgba(252, 172, 1, 0.20);
