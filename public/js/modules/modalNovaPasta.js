@@ -17,6 +17,7 @@ export function initModalNovaPasta() {
     const Cargo = document.getElementById('selectCargo');
     const Setor = document.getElementById('selectSetor');
 
+    //validaçao dos campos a serem preenchidos para criar as pastas
     btnCriarPasta.addEventListener('click', () => {
        if (NomePasta.value == '') {
            alert('preencha o nome da pasta');
@@ -42,4 +43,12 @@ export function initModalNovaPasta() {
         modalNovaPasta.classList.add('hidden');
 
     });
+      //onde as psatas criadas vao ficar
+    const listaPastas = document.getElementById('listaPastas');
+    const novaPasta = document.createElement('div');
+    //as informações que vao aparecer na pasta crada
+    novaPasta.textContent = `${NomePasta.value} - ${CpfFFuncionario.value} - ${Cargo.value} - ${Setor.value}`;
+    novaPasta.classList.add('pasta');
+    //adiciona a nova pasta a lista de pastas
+    listaPastas.appendChild(novaPasta);
 }
