@@ -41,14 +41,15 @@ export function initModalNovaPasta() {
         Cargo.value = '__';
         Setor.value = '__';
         modalNovaPasta.classList.add('hidden');
+        
+        //onde as psatas criadas vao ficar
+        const listaPastas = document.getElementById('listaPastas');
+        const novaPasta = document.createElement('div');
+        //as informações que vao aparecer na pasta criada
+        novaPasta.textContent = `${NomePasta.value} - ${CpfFFuncionario.value} - ${Cargo.value} - ${Setor.value}`;
+        //adiciona a nova pasta a lista de pastas
+        novaPasta.classList.add('pasta');
+        listaPastas.appendChild(novaPasta);
 
     });
-      //onde as psatas criadas vao ficar
-    const listaPastas = document.getElementById('listaPastas');
-    const novaPasta = document.createElement('div');
-    //as informações que vao aparecer na pasta crada
-    novaPasta.textContent = `${NomePasta.value} - ${CpfFFuncionario.value} - ${Cargo.value} - ${Setor.value}`;
-    novaPasta.classList.add('pasta');
-    //adiciona a nova pasta a lista de pastas
-    listaPastas.appendChild(novaPasta);
 }
