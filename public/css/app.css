@@ -177,3 +177,10 @@ body {
 .pasta:hover {
     transform: translateY(-7px);
 }
+
+#listaPastas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 5fr));
+    gap: 18px;
+    margin-top: 18px;
+}
