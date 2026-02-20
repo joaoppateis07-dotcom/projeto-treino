@@ -117,14 +117,6 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// SPA fallback: para qualquer GET que aceite HTML, retorna index.html
-app.get(/^\/.*/, (req, res) => {
-  if (req.method === 'GET' && req.headers.accept && req.headers.accept.includes('text/html')) {
-    return res.sendFile(path.join(__dirname, 'public', 'index.html'));
-  }
-  return res.status(404).end();
-});
-
 app.post("/pastas", (req, res) => {
   const { nome, cpf, cargo, setor } = req.body;
 
@@ -148,6 +140,14 @@ app.get("/pastas", (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
+});
+
+// SPA fallback: para qualquer GET que aceite HTML, retorna index.html
+app.get(/^\/.*/, (req, res) => {
+  if (req.method === 'GET' && req.headers.accept && req.headers.accept.includes('text/html')) {
+    return res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  }
+  return res.status(404).end();
 });
 
 app.listen(PORT, () => {
