@@ -16,14 +16,17 @@ export function initModalNovaPasta() {
     const CpfFFuncionario = document.getElementById('inputCpfFFuncionario');
     const Cargo = document.getElementById('selectCargo');
     const Setor = document.getElementById('selectSetor');
+    //onde as psatas criadas vao ficar
+    const listaPastas = document.getElementById('listaPastas');
 
     //validaçao dos campos a serem preenchidos para criar as pastas
     btnCriarPasta.addEventListener('click', () => {
-       if (NomePasta.value == '') {
+
+        if (NomePasta.value.trim() == '') {
            alert('preencha o nome da pasta');
            return
        }
-        if (CpfFFuncionario.value == '') {
+        if (CpfFFuncionario.value.trim() == '') {
             alert('preencha o cpf do funcionário');
             return
         }
@@ -35,21 +38,32 @@ export function initModalNovaPasta() {
             alert('selecione um setor');
             return
         }
-        alert('pasta criada com sucesso!!')
+
+        const nome = NomePasta.value.trim();
+        const cpf = CpfFFuncionario.value.trim();
+        const cargo = Cargo.value;
+        const setor = Setor.value;
+
+        //cria um elemento para a nova pasta
+        const novaPasta = document.createElement('div');
+
+         
+        //as informações que vao aparecer na pasta criada
+        novaPasta.textContent = nome + ' - ' + cpf + ' - ' + cargo + ' - ' + setor;
+
+        //adiciona a nova pasta a lista de pastas
+        novaPasta.classList.add('pasta');
+
+        
+        listaPastas.appendChild(novaPasta);
+
+        
         NomePasta.value = '';
         CpfFFuncionario.value = '';
         Cargo.value = '__';
         Setor.value = '__';
-        modalNovaPasta.classList.add('hidden');
         
-        //onde as psatas criadas vao ficar
-        const listaPastas = document.getElementById('listaPastas');
-        const novaPasta = document.createElement('div');
-        //as informações que vao aparecer na pasta criada
-        novaPasta.textContent = `${NomePasta.value} - ${CpfFFuncionario.value} - ${Cargo.value} - ${Setor.value}`;
-        //adiciona a nova pasta a lista de pastas
-        novaPasta.classList.add('pasta');
-        listaPastas.appendChild(novaPasta);
+        modalNovaPasta.classList.add('hidden');
 
     });
 }
