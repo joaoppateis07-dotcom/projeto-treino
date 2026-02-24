@@ -1,4 +1,5 @@
 export function initModalNovaPasta() {
+    const pastas = [];
     const btnNovaPasta = document.getElementById('btnNovaPasta');
     const modalNovaPasta = document.getElementById('modalNovaPasta');
     const btnCancelarPasta = document.getElementById('btnCancelarPasta');
@@ -21,6 +22,7 @@ export function initModalNovaPasta() {
 
     //validaçao dos campos a serem preenchidos para criar as pastas
     btnCriarPasta.addEventListener('click', () => {
+        
 
         if (NomePasta.value.trim() == '') {
            alert('preencha o nome da pasta');
@@ -44,26 +46,83 @@ export function initModalNovaPasta() {
         const cargo = Cargo.value;
         const setor = Setor.value;
 
-        //cria um elemento para a nova pasta
-        const novaPasta = document.createElement('div');
+        fetch('/pastas', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ nome, cpf, cargo, setor })
+        })
+        .then(response => response.json())
+        .then(data => {
+            //cria um elemento para a nova pasta
+            const novaPasta = document.createElement('div');
 
-         
-        //as informações que vao aparecer na pasta criada
-        novaPasta.textContent = nome + ' - ' + cpf + ' - ' + cargo + ' - ' + setor;
+            pastas.push(data);
+            //as informações que vao aparecer na pasta criada
+            novaPasta.textContent = nome + ' - ' + cpf + ' - ' + cargo + ' - ' + setor;
+            novaPasta.dataset.id = data.id; // ✅ CORREÇÃO: definir o ID
 
-        //adiciona a nova pasta a lista de pastas
-        novaPasta.classList.add('pasta');
+            //adiciona a nova pasta a lista de pastas
+            novaPasta.classList.add('pasta');
 
-        
-        listaPastas.appendChild(novaPasta);
+            novaPasta.addEventListener('click' , () => {
+                const id = novaPasta.dataset.id;
+                const dados = pastas.find(p => p.id == id);
+                alert(
+                    'Nome: ' + dados.nome + '\n' +
+                    'Cpf: ' + dados.cpf + "\n" +
+                    'Cargo: ' + dados.cargo + '\n' +
+                    'Setor: ' + dados.setor
+                );
+            });
+            listaPastas.appendChild(novaPasta);
 
-        
-        NomePasta.value = '';
-        CpfFFuncionario.value = '';
-        Cargo.value = '__';
-        Setor.value = '__';
-        
-        modalNovaPasta.classList.add('hidden');
+            
+            NomePasta.value = '';
+            CpfFFuncionario.value = '';
+            Cargo.value = '__';
+            Setor.value = '__';
+            
+            modalNovaPasta.classList.add('hidden');
+        })
+        .catch(error => {
+            console.error('Erro ao criar pasta:', error);
+            alert('Erro ao criar pasta. Tente novamente.');
+        });
 
     });
+
+    
+    function carregarPastas() {
+        fetch('/pastas')
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(pasta => {
+                    pastas.push(pasta);
+                    const novaPasta = document.createElement('div');
+                    novaPasta.textContent = pasta.nome + ' - ' + pasta.cpf + ' - ' + pasta.cargo + ' - ' + pasta.setor;
+                    novaPasta.classList.add('pasta');
+                    
+                    novaPasta.dataset.id = pasta.id;
+
+                    novaPasta.addEventListener('click' , () => {
+                        const id = novaPasta.dataset.id; // ✅ CORREÇÃO: pegar ID no momento certo
+                        const dados = pastas.find(p => p.id == id);
+                        alert(
+                            'Nome: ' + dados.nome + '\n' +
+                            'Cpf: ' + dados.cpf + "\n" +
+                            'Cargo: ' + dados.cargo + '\n' +
+                            'Setor: ' + dados.setor
+                        );
+                    });
+                    
+                    listaPastas.appendChild(novaPasta);
+                });
+            })
+            .catch(error => console.error('Erro ao carregar pastas:', error));
+    }
+    carregarPastas();
 }
+
+
