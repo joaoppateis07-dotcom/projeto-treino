@@ -95,50 +95,90 @@ body {
     background: rgba(248, 29, 29, 0.347);
 }
 
-#inputNomePasta {
-    border-radius: 10px;
-    padding: 10px 20px;
-    border: none;
-    background: rgb(161, 161, 161);
-    margin: 0 auto;
-    width: 100%;
-    margin-bottom: 18px;
-}
-
+/* ── Nova Pasta: inputs & selects ── */
+#inputNomePasta,
 #inputCpfFFuncionario {
     border-radius: 10px;
-    padding: 10px 20px;
-    border: none;
-    background: rgb(161, 161, 161);
-    margin: 0 auto;
-    margin-bottom: 18px;
+    padding: 11px 18px;
+    border: 1.5px solid rgba(255,255,255,0.08);
+    background: #252525;
+    color: #fff;
     width: 100%;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+#inputNomePasta:focus,
+#inputCpfFFuncionario:focus {
+    border-color: rgb(200, 144, 1);
+    background: #2d2d2d;
+}
+
+#inputNomePasta::placeholder,
+#inputCpfFFuncionario::placeholder {
+    color: rgba(255,255,255,0.3);
 }
 
 #tituloModalNovaPasta {
     text-align: center;
     font-family: 'Montserrat', sans-serif;
-    padding: 40px;
-    margin-bottom: 18px;
+    padding: 20px 0 24px;
+    margin-bottom: 4px;
+    font-size: 20px;
+    letter-spacing: 0.5px;
+    color: rgb(200, 144, 1);
 }
 
-#selectCargo {
-    border-radius: 10px;
-    padding: 10px 20px;
-    border: none;
-    background: rgb(161, 161, 161);
-    width: 100%;
-    margin-bottom: 18px;
-}
-
+#selectCargo,
 #selectSetor {
     border-radius: 10px;
-    padding: 10px 20px;
-    border: none;
-    background: rgb(161, 161, 161);
-    margin: 0 auto;
-    margin-bottom: 18px;
+    padding: 11px 18px;
+    border: 1.5px solid rgba(255,255,255,0.08);
+    background: #252525;
+    color: #fff;
     width: 100%;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23c89001' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+#selectCargo:focus,
+#selectSetor:focus {
+    border-color: rgb(200, 144, 1);
+    background-color: #2d2d2d;
+}
+
+#selectCargo option,
+#selectSetor option {
+    background: #2d2d2d;
+    color: #fff;
+}
+
+#btnCriar\&Cancelar {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+#btnCriar\&Cancelar .btn {
+    flex: 1;
+}
+
+#containerCampos {
+    align-items: stretch;
+    width: 90%;
+    flex-direction: column;
+    display: flex;
+    gap: 14px;
 }
 
 #tituloRhDocumentos {
@@ -151,14 +191,6 @@ body {
     text-align: center;
     font-family: 'Montserrat', sans-serif;
     margin-bottom: 18px;
-}
-
-#containerCampos {
-    align-items: center;
-    width: 80%;
-    flex-direction: column;
-    display: flex;
-    gap: 18px;
 }
 
 .pasta {
@@ -194,14 +226,15 @@ body {
 }
 
 .modal-box-upload {
-    background: #2d2d2d;
+    background: #222222;
     width: 80vw;
     height: 80vh;
     border-radius: 20px;
-    box-shadow: 3px 10px 35px rgba(252, 172, 1, 0.25);
+    box-shadow: 0 8px 48px rgba(252,172,1,0.18), 0 2px 12px rgba(0,0,0,0.6);
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    border: 1px solid rgba(252,172,1,0.12);
 }
 
 #uploadHeader {
@@ -209,8 +242,8 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 18px 28px;
-    background: #3a3a3a;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    background: #252525;
+    border-bottom: 1px solid rgba(252,172,1,0.18);
     flex-wrap: wrap;
     gap: 10px;
 }
@@ -218,14 +251,20 @@ body {
 #uploadPastaInfo {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    font-size: 13px;
-    opacity: 0.85;
+    gap: 5px;
     font-family: 'Montserrat', sans-serif;
 }
 
 #uploadPastaInfo span {
     display: block;
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+}
+
+#uploadPastaInfo span:first-child {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
 }
 
 .btn-editar {
@@ -237,25 +276,42 @@ body {
     background: #1558a0;
 }
 
+/* ── Upload modal: edit form ── */
 #editFormUpload {
-    background: #3e3e3e;
-    padding: 18px 28px;
+    background: #252525;
+    padding: 16px 28px;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     align-items: center;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid rgba(252,172,1,0.15);
 }
 
 #editFormUpload input,
 #editFormUpload select {
     border-radius: 10px;
-    padding: 8px 14px;
-    border: none;
-    background: rgb(161, 161, 161);
+    padding: 9px 14px;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    background: #1c1c1c;
+    color: #fff;
     font-size: 13px;
     flex: 1;
     min-width: 150px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#editFormUpload input:focus,
+#editFormUpload select:focus {
+    border-color: rgb(200,144,1);
+}
+
+#editFormUpload input::placeholder {
+    color: rgba(255,255,255,0.3);
+}
+
+#editFormUpload option {
+    background: #1c1c1c;
 }
 
 #editBtns {
@@ -265,53 +321,102 @@ body {
     justify-content: flex-end;
 }
 
+/* ── Upload area ── */
 #uploadArea {
     flex: 1;
-    background: #f5f5f5;
-    margin: 20px 28px;
-    border-radius: 12px;
+    background: #1c1c1c;
+    margin: 16px 24px;
+    border-radius: 14px;
+    border: 2px dashed rgba(252,172,1,0.25);
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    cursor: pointer;
+    justify-content: flex-start;
+    cursor: default;
     overflow-y: auto;
-    padding: 20px;
-    gap: 12px;
+    padding: 20px 16px;
+    gap: 10px;
 }
 
 #uploadAreaTexto {
-    color: #888;
+    color: rgba(255,255,255,0.3);
     font-size: 14px;
     text-align: center;
-    pointer-events: none;
+    cursor: pointer;
+    user-select: none;
+    margin: auto;
+    transition: color 0.2s;
 }
 
+#uploadAreaTexto:hover {
+    color: rgb(200,144,1);
+}
+
+/* ── Arquivo item ── */
 .arquivo-item {
-    background: #e8e8e8;
-    color: #333;
-    padding: 8px 18px;
-    border-radius: 8px;
+    background: #2d2d2d;
+    border: 1px solid rgba(252,172,1,0.15);
+    color: #e8e8e8;
+    padding: 10px 16px;
+    border-radius: 10px;
     font-size: 13px;
     width: 100%;
-    text-align: left;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.arquivo-item:hover {
+    background: #383838;
+    border-color: rgba(252,172,1,0.45);
+}
+
+.arquivo-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.arquivo-nome {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.arquivo-abrir {
+    color: rgb(200,144,1);
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(200,144,1,0.4);
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.arquivo-abrir:hover {
+    background: rgba(200,144,1,0.15);
 }
 
 #uploadFooter {
     display: flex;
     justify-content: space-between;
-    padding: 16px 28px;
-    background: #3a3a3a;
-    border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 14px 24px;
+    background: #252525;
+    border-top: 1px solid rgba(252,172,1,0.18);
 }
 
 .btn-sair {
-    background: #1c1c1c;
-    color: white;
+    background: transparent;
+    color: rgba(255,255,255,0.6);
     border: 1px solid rgba(255,255,255,0.15);
 }
 
 .btn-sair:hover {
-    background: #333;
+    background: rgba(255,255,255,0.06);
+    color: #fff;
 }

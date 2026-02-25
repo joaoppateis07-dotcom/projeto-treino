@@ -49,10 +49,16 @@ export function initModalNovaPasta() {
         modalUpload.classList.remove('hidden');
     }
 
+    // Guarda referências dos arquivos para poder abrir depois
+    const arquivosAdicionados = [];
+
     function fecharModalUpload() {
         modalUpload.classList.add('hidden');
         listaArquivos.innerHTML = '';
         uploadAreaTexto.style.display = '';
+        // Revoga URLs criados para liberar memória
+        arquivosAdicionados.forEach(obj => URL.revokeObjectURL(obj.url));
+        arquivosAdicionados.length = 0;
     }
 
     // Botão Editar – abre/fecha o formulário de edição
@@ -114,20 +120,53 @@ export function initModalNovaPasta() {
         });
     });
 
-    // Área de upload – clicar na área branca ou no botão Upload+
-    uploadArea.addEventListener('click', () => fileInput.click());
-    btnUploadMais.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
+    // Área de upload – clicar no texto (só quando não há arquivos) ou no botão Upload+
+    uploadAreaTexto.addEventListener('click', () => fileInput.click());
+    btnUploadMais.addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', () => {
         Array.from(fileInput.files).forEach(file => {
             uploadAreaTexto.style.display = 'none';
+            const url = URL.createObjectURL(file);
+            arquivosAdicionados.push({ name: file.name, url });
+
             const item = document.createElement('div');
             item.classList.add('arquivo-item');
-            item.textContent = file.name;
+
+            const icon = document.createElement('span');
+            icon.classList.add('arquivo-icon');
+            icon.textContent = getIcone(file.name);
+
+            const nome = document.createElement('span');
+            nome.classList.add('arquivo-nome');
+            nome.textContent = file.name;
+
+            const abrir = document.createElement('span');
+            abrir.classList.add('arquivo-abrir');
+            abrir.textContent = 'Abrir ↗';
+            abrir.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.open(url, '_blank');
+            });
+
+            item.appendChild(icon);
+            item.appendChild(nome);
+            item.appendChild(abrir);
+            item.addEventListener('click', () => window.open(url, '_blank'));
             listaArquivos.appendChild(item);
         });
         fileInput.value = '';
     });
+
+    function getIcone(nome) {
+        const ext = nome.split('.').pop().toLowerCase();
+        const mapa = {
+            pdf: '📄', doc: '📝', docx: '📝', xls: '📊', xlsx: '📊',
+            ppt: '📋', pptx: '📋', jpg: '🖼️', jpeg: '🖼️', png: '🖼️',
+            gif: '🖼️', mp4: '🎬', mp3: '🎵', zip: '🗜️', rar: '🗜️'
+        };
+        return mapa[ext] || '📎';
+    }
 
     // Botão Sair e clique no backdrop
     btnSair.addEventListener('click', fecharModalUpload);
