@@ -46,6 +46,26 @@ db.run(
   }
 );
 
+// Tabela de subpastas – pastas filhas criadas dentro de uma pasta de funcionário
+db.run(
+  `CREATE TABLE IF NOT EXISTS subpastas (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    pasta_id  INTEGER NOT NULL,
+    nome      TEXT    NOT NULL,
+    criado_em TEXT    NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (pasta_id) REFERENCES pastas(id) ON DELETE CASCADE
+  )`,
+  (err) => {
+    if (err) console.log("Erro criando tabela subpastas:", err.message);
+    else console.log("Tabela 'subpastas' pronta ✅");
+  }
+);
+
+// Adiciona coluna subpasta_id em arquivos para saber a qual subpasta o arquivo pertence.
+// NULL = arquivo fica na raiz da pasta principal.
+// Ignora erro se a coluna já existir (migration segura).
+db.run(`ALTER TABLE arquivos ADD COLUMN subpasta_id INTEGER DEFAULT NULL`, () => {});
+
 // Garante que a pasta de uploads existe no disco
 const UPLOADS_DIR = path.join(__dirname, "uploads");
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR);
@@ -183,10 +203,11 @@ app.put("/pastas/:id", (req, res) => {
 
 // ── Rotas: Arquivos de uma pasta ───────────────────────────────────────────────
 
-// Lista todos os arquivos de uma pasta específica
+// Lista apenas os arquivos na raiz de uma pasta (sem subpasta_id) – arquivos dentro de
+// subpastas são carregados pela rota GET /subpastas/:id/arquivos
 app.get("/pastas/:id/arquivos", (req, res) => {
   db.all(
-    "SELECT * FROM arquivos WHERE pasta_id = ? ORDER BY criado_em ASC",
+    "SELECT * FROM arquivos WHERE pasta_id = ? AND subpasta_id IS NULL ORDER BY criado_em ASC",
     [req.params.id],
     (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
@@ -252,6 +273,131 @@ app.delete("/pastas/:id/arquivos/:arquivoId", (req, res) => {
       res.json({ ok: true });
     });
   });
+});
+
+// ── Rotas: Subpastas ──────────────────────────────────────────────────────────────
+
+// Lista todas as subpastas de uma pasta
+app.get("/pastas/:id/subpastas", (req, res) => {
+  db.all(
+    "SELECT * FROM subpastas WHERE pasta_id = ? ORDER BY criado_em ASC",
+    [req.params.id],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows);
+    }
+  );
+});
+
+// Cria uma nova subpasta dentro de uma pasta
+app.post("/pastas/:id/subpastas", (req, res) => {
+  const { nome } = req.body;
+  if (!nome || nome.trim() === "")
+    return res.status(400).json({ error: "Nome da subpasta é obrigatório" });
+
+  db.run(
+    "INSERT INTO subpastas (pasta_id, nome) VALUES (?, ?)",
+    [req.params.id, nome.trim()],
+    function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.status(201).json({ id: this.lastID, pasta_id: Number(req.params.id), nome: nome.trim() });
+    }
+  );
+});
+
+// Remove uma subpasta e todos os seus arquivos do banco (arquivos no disco
+// são deletados antes de remover o registro)
+app.delete("/pastas/:id/subpastas/:subId", (req, res) => {
+  const { subId } = req.params;
+
+  // Busca todos os arquivos da subpasta para excluir do disco
+  db.all("SELECT nome_arquivo FROM arquivos WHERE subpasta_id = ?", [subId], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    rows.forEach(row => {
+      const fp = path.join(UPLOADS_DIR, row.nome_arquivo);
+      if (fs.existsSync(fp)) fs.unlinkSync(fp);
+    });
+
+    // Remove os arquivos do banco
+    db.run("DELETE FROM arquivos WHERE subpasta_id = ?", [subId], (err2) => {
+      if (err2) return res.status(500).json({ error: err2.message });
+
+      // Remove a subpasta
+      db.run("DELETE FROM subpastas WHERE id = ?", [subId], (err3) => {
+        if (err3) return res.status(500).json({ error: err3.message });
+        res.json({ ok: true });
+      });
+    });
+  });
+});
+
+// ── Rotas: Arquivos de uma subpasta ──────────────────────────────────────────────
+
+// Lista os arquivos de uma subpasta específica
+app.get("/subpastas/:id/arquivos", (req, res) => {
+  db.all(
+    "SELECT * FROM arquivos WHERE subpasta_id = ? ORDER BY criado_em ASC",
+    [req.params.id],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows);
+    }
+  );
+});
+
+// Faz upload de arquivos direto para uma subpasta
+app.post("/subpastas/:id/arquivos", upload.array("arquivos"), (req, res) => {
+  const subpastaId = req.params.id;
+  const files = req.files;
+  if (!files || files.length === 0)
+    return res.status(400).json({ error: "Nenhum arquivo enviado" });
+
+  // Precisamos do pasta_id da subpasta para preencher o campo obrigatório
+  db.get("SELECT pasta_id FROM subpastas WHERE id = ?", [subpastaId], (err, sub) => {
+    if (err || !sub) return res.status(404).json({ error: "Subpasta não encontrada" });
+
+    const inseridos = [];
+    let pendentes = files.length;
+
+    files.forEach((file) => {
+      db.run(
+        `INSERT INTO arquivos (pasta_id, subpasta_id, nome_original, nome_arquivo, mimetype, tamanho)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [sub.pasta_id, subpastaId, file.originalname, file.filename, file.mimetype, file.size],
+        function (err2) {
+          if (!err2) {
+            inseridos.push({
+              id:            this.lastID,
+              pasta_id:      sub.pasta_id,
+              subpasta_id:   Number(subpastaId),
+              nome_original: file.originalname,
+              nome_arquivo:  file.filename,
+              mimetype:      file.mimetype,
+              tamanho:       file.size,
+              url:           "/uploads/" + file.filename
+            });
+          }
+          pendentes--;
+          if (pendentes === 0) res.status(201).json(inseridos);
+        }
+      );
+    });
+  });
+});
+
+// Move um arquivo entre raiz e subpasta (ou entre subpastas).
+// Body: { subpasta_id: <number|null> }
+app.patch("/arquivos/:id/mover", (req, res) => {
+  const { subpasta_id } = req.body; // null = mover para raiz
+  db.run(
+    "UPDATE arquivos SET subpasta_id = ? WHERE id = ?",
+    [subpasta_id ?? null, req.params.id],
+    (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ ok: true });
+    }
+  );
 });
 
 // ── Fallback SPA ───────────────────────────────────────────────────────────────

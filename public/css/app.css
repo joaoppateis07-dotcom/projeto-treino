@@ -505,6 +505,190 @@ body {
     color: rgb(248,29,29);
 }
 
+/* ── Subpastas ────────────────────────────────────────────────────
+
+   Seção que aparece dentro do modal de pasta, mostrando as pastas
+   filhas (subpastas). Cada card é uma zona de drop para arquivos.  */
+
+/* Botão pequeno usado no cabeçalho das subpastas e no breadcrumb */
+.btn-sm {
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 6px;
+}
+
+/* Container geral da seção de subpastas */
+#subpastasSection {
+    margin: 0 24px 0;
+    border-bottom: 1px solid rgba(252,172,1,0.12);
+    padding-bottom: 12px;
+}
+
+/* Linha de cabeçalho: título à esquerda, botão "+ Nova" à direita */
+#subpastasHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0 8px;
+}
+
+/* Título "📂 Subpastas" */
+#subpastasTitulo {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+/* Formulário inline para criar nova subpasta */
+#novaSubpastaForm {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0 10px;
+}
+
+/* Input de texto para o nome da nova subpasta */
+#inputNomeSubpasta {
+    flex: 1;
+    background: #1c1c1c;
+    border: 1px solid rgba(252,172,1,0.35);
+    border-radius: 8px;
+    color: #e8e8e8;
+    padding: 7px 12px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+#inputNomeSubpasta:focus { border-color: rgb(200,144,1); }
+
+/* Container horizontal que lista os cards das subpastas – scroll lateral */
+#listaSubpastas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 4px 0;
+    min-height: 10px;
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+/* Card individual de uma subpasta */
+.subpasta-card {
+    position: relative;
+    background: #252525;
+    border: 2px solid rgba(252,172,1,0.2);
+    border-radius: 12px;
+    padding: 14px 16px 12px;
+    min-width: 110px;
+    max-width: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    user-select: none;
+}
+.subpasta-card:hover {
+    background: #2d2d2d;
+    border-color: rgba(252,172,1,0.5);
+    transform: translateY(-2px);
+}
+
+/* Destaque quando um arquivo está sobre o card (drag-over) */
+.subpasta-card.drag-over {
+    border-color: rgb(200,144,1);
+    background: rgba(200,144,1,0.1);
+    transform: scale(1.04);
+    box-shadow: 0 0 0 3px rgba(200,144,1,0.25);
+}
+
+/* Ícone 📁 do card */
+.subpasta-icon {
+    font-size: 30px;
+    line-height: 1;
+}
+
+/* Nome da subpasta – centralizado, truncado se muito longo */
+.subpasta-nome {
+    font-size: 12px;
+    font-weight: 500;
+    color: #e0e0e0;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+/* Botão ✕ no canto superior direito do card de subpasta */
+.subpasta-excluir {
+    position: absolute;
+    top: 5px;
+    right: 7px;
+    background: transparent;
+    border: none;
+    color: rgba(248,29,29,0.5);
+    font-size: 12px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: color 0.2s, background 0.2s;
+}
+.subpasta-excluir:hover {
+    color: rgb(248,29,29);
+    background: rgba(248,29,29,0.12);
+}
+
+/* Badge com a quantidade de arquivos dentro da subpasta */
+.subpasta-badge {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    background: rgb(200,144,1);
+    color: #111;
+    font-size: 10px;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+/* ── Breadcrumb ───────────────────────────────────────────────────
+   Barra de navegação que aparece quando o usuário está dentro de
+   uma subpasta. Mostra o caminho e um botão para voltar à raiz.  */
+#breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 8px 24px 4px;
+    padding: 8px 14px;
+    background: #1c1c1c;
+    border-radius: 8px;
+    border: 1px solid rgba(252,172,1,0.18);
+}
+
+/* Texto do breadcrumb: "NomePasta / 📂 NomeSubpasta" */
+#breadcrumbTexto {
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+    font-weight: 500;
+}
+
+/* Card sendo arrastado fica translúcido para indicar movimento */
+.arrastando {
+    opacity: 0.45;
+    cursor: grabbing;
+}
+
 /* Rodapé do modal de upload: contém o botão "Upload+" e o botão "Sair" */
 #uploadFooter {
     display: flex;

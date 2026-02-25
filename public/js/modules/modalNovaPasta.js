@@ -87,6 +87,35 @@ export function initModalNovaPasta() {
     const uploadAreaTexto  = document.getElementById('uploadAreaTexto');
 
     // ──────────────────────────────────────────────────────────────
+    // REFERÊNCIAS DA SEÇÃO SUBPASTAS
+    // ──────────────────────────────────────────────────────────────
+
+    // Seção inteira das subpastas (inclui cabeçalho, form e lista)
+    const subpastasSection     = document.getElementById('subpastasSection');
+    // Botão "+ Nova subpasta"
+    const btnNovaSubpasta      = document.getElementById('btnNovaSubpasta');
+    // Formulário inline de criação de nova subpasta
+    const novaSubpastaForm     = document.getElementById('novaSubpastaForm');
+    // Campo de texto onde o usuário digita o nome da nova subpasta
+    const inputNomeSubpasta    = document.getElementById('inputNomeSubpasta');
+    // Botão "Criar" dentro do formulário inline
+    const btnCriarSubpasta     = document.getElementById('btnCriarSubpasta');
+    // Botão "✕" para cancelar a criação
+    const btnCancelarSubpasta  = document.getElementById('btnCancelarSubpasta');
+    // Container onde os cards das subpastas são renderizados
+    const listaSubpastas       = document.getElementById('listaSubpastas');
+    // Barra de navegação de subpasta (breadcrumb) – fica oculta na raiz
+    const breadcrumb           = document.getElementById('breadcrumb');
+    // Texto descritivo do breadcrumb (ex: "Maria > Documentos")
+    const breadcrumbTexto      = document.getElementById('breadcrumbTexto');
+    // Botão "← Voltar" que sai da subpasta e volta à raiz
+    const btnVoltarRaiz        = document.getElementById('btnVoltarRaiz');
+
+    // Estado atual da navegação: null = raiz da pasta, objeto = dentro de uma subpasta
+    // { id, nome } da subpasta atualmente aberta
+    let subpastaAtual = null;
+
+    // ──────────────────────────────────────────────────────────────
     // FUNÇÃO: abrirModalPasta
     // Preenche o cabeçalho do modal com os dados da pasta clicada
     // e exibe o modal de upload/detalhes
@@ -107,15 +136,23 @@ export function initModalNovaPasta() {
         // Exibe o modal removendo a classe 'hidden'
         modalUpload.classList.remove('hidden');
 
-        // Carrega os arquivos salvos no servidor para esta pasta
+        // Carrega os arquivos salvos no servidor para esta pasta (raiz)
         carregarArquivos(dados.id);
+        // Carrega as subpastas desta pasta
+        carregarSubpastas(dados.id);
     }
 
     function fecharModalUpload() {
         modalUpload.classList.add('hidden');
         listaArquivos.innerHTML = '';
+        listaSubpastas.innerHTML = '';
         uploadAreaTexto.style.display = '';
-        // Os arquivos continuam salvos no servidor; serão recarregados na próxima abertura
+        // Reseta estado de navegação para a raiz
+        subpastaAtual = null;
+        breadcrumb.classList.add('hidden');
+        subpastasSection.classList.remove('hidden');
+        novaSubpastaForm.classList.add('hidden');
+        // Os arquivos e subpastas continuam salvos no servidor
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -276,8 +313,250 @@ export function initModalNovaPasta() {
         // Clicar em qualquer parte do card também abre o arquivo
         item.addEventListener('click', () => window.open(url, '_blank'));
 
+        // ── Arrastar este arquivo para dentro de uma subpasta ──────────────
+        // O ID do arquivo é passado via dataTransfer para a zona de drop da subpasta
+        item.draggable = true;
+        item.addEventListener('dragstart', (e) => {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/arquivo-id', String(arquivoId));
+            item.classList.add('arrastando');
+        });
+        item.addEventListener('dragend', () => item.classList.remove('arrastando'));
+
         listaArquivos.appendChild(item);
     }
+
+    // ──────────────────────────────────────────────────────────────
+    // FUNÇÃO: carregarSubpastas
+    // Busca todas as subpastas de uma pasta no servidor e renderiza
+    // cada card na seção de subpastas do modal.
+    // ──────────────────────────────────────────────────────────────
+    function carregarSubpastas(pastaId) {
+        listaSubpastas.innerHTML = ''; // Limpa antes de repopular
+        fetch('/pastas/' + pastaId + '/subpastas')
+            .then(r => r.json())
+            .then(subs => subs.forEach(s => renderizarCardSubpasta(s.id, s.nome)))
+            .catch(err => console.error('Erro ao carregar subpastas:', err));
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // FUNÇÃO: renderizarCardSubpasta
+    // Cria o card visual de uma subpasta:
+    //  - Zona de drop para arquivos existentes (drag de card) e do SO (OS drag)
+    //  - Clique abre a visualização da subpasta
+    //  - Botão ✕ exclui a subpasta e todos os seus arquivos
+    // ──────────────────────────────────────────────────────────────
+    function renderizarCardSubpasta(subId, subNome) {
+        const card = document.createElement('div');
+        card.classList.add('subpasta-card');
+        card.dataset.subId = subId;
+
+        // Ícone de pasta + nome
+        const icone = document.createElement('span');
+        icone.classList.add('subpasta-icon');
+        icone.textContent = '📁';
+
+        const nomeEl = document.createElement('span');
+        nomeEl.classList.add('subpasta-nome');
+        nomeEl.textContent = subNome;
+
+        // Botão ✕ para excluir a subpasta
+        const excluir = document.createElement('button');
+        excluir.classList.add('subpasta-excluir');
+        excluir.textContent = '✕';
+        excluir.title = 'Excluir subpasta';
+        excluir.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!confirm('Excluir a subpasta "' + subNome + '" e todos os seus arquivos?')) return;
+            fetch('/pastas/' + pastaSelecionada.id + '/subpastas/' + subId, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(() => card.remove())
+                .catch(err => {
+                    console.error('Erro ao excluir subpasta:', err);
+                    alert('Não foi possível excluir a subpasta.');
+                });
+        });
+
+        // ── Zona de drop para arquivos arrastados da lista da raiz ──
+        card.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            card.classList.add('drag-over');
+        });
+        card.addEventListener('dragleave', (e) => {
+            // Só remove o highlight se o mouse saiu do card de verdade
+            if (!card.contains(e.relatedTarget)) card.classList.remove('drag-over');
+        });
+        card.addEventListener('drop', (e) => {
+            e.preventDefault();
+            card.classList.remove('drag-over');
+
+            // 1) Arquivo vindo do explorador do SO (arquivos externos)
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                const formData = new FormData();
+                Array.from(e.dataTransfer.files).forEach(f => formData.append('arquivos', f));
+                fetch('/subpastas/' + subId + '/arquivos', { method: 'POST', body: formData })
+                    .then(r => r.json())
+                    .then(() => {
+                        // Atualiza contador do card
+                        atualizarContagemSubpasta(card, subId);
+                    })
+                    .catch(err => console.error('Erro ao dropar arquivo do SO:', err));
+                return;
+            }
+
+            // 2) Arquivo vindo de outro card da lista (drag interno)
+            const arquivoId = e.dataTransfer.getData('text/arquivo-id');
+            if (!arquivoId) return;
+
+            fetch('/arquivos/' + arquivoId + '/mover', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subpasta_id: Number(subId) })
+            })
+            .then(r => r.json())
+            .then(() => {
+                // Remove o card do arquivo da lista atual
+                const itemEl = listaArquivos.querySelector('[data-arquivo-id="' + arquivoId + '"]');
+                if (itemEl) {
+                    itemEl.remove();
+                    // Se a lista raiz ficou vazia, mostra o texto instrucional
+                    if (listaArquivos.children.length === 0) uploadAreaTexto.style.display = '';
+                }
+                // Atualiza o contador no card da subpasta destino
+                atualizarContagemSubpasta(card, subId);
+            })
+            .catch(err => console.error('Erro ao mover arquivo:', err));
+        });
+
+        // Clicar no card (e não no botão ✕) abre a visualização da subpasta
+        card.addEventListener('click', (e) => {
+            if (e.target === excluir) return;
+            abrirSubpasta(subId, subNome);
+        });
+
+        card.appendChild(icone);
+        card.appendChild(nomeEl);
+        card.appendChild(excluir);
+        listaSubpastas.appendChild(card);
+
+        // Busca a contagem inicial de arquivos para exibir no card
+        atualizarContagemSubpasta(card, subId);
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // FUNÇÃO: atualizarContagemSubpasta
+    // Busca quantos arquivos existem na subpasta e atualiza o badge
+    // de contagem no card visual.
+    // ──────────────────────────────────────────────────────────────
+    function atualizarContagemSubpasta(card, subId) {
+        fetch('/subpastas/' + subId + '/arquivos')
+            .then(r => r.json())
+            .then(arqs => {
+                // Remove badge anterior se existir
+                const badgeAntigo = card.querySelector('.subpasta-badge');
+                if (badgeAntigo) badgeAntigo.remove();
+
+                if (arqs.length > 0) {
+                    const badge = document.createElement('span');
+                    badge.classList.add('subpasta-badge');
+                    badge.textContent = arqs.length;
+                    card.appendChild(badge);
+                }
+            })
+            .catch(() => {});
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // FUNÇÃO: abrirSubpasta
+    // Navega para dentro de uma subpasta:
+    //  - Esconde a seção de subpastas
+    //  - Mostra o breadcrumb com botão de voltar
+    //  - Limpa e carrega os arquivos desta subpasta
+    // ──────────────────────────────────────────────────────────────
+    function abrirSubpasta(subId, subNome) {
+        subpastaAtual = { id: subId, nome: subNome };
+
+        // Troca a seção de subpastas pelo breadcrumb
+        subpastasSection.classList.add('hidden');
+        breadcrumb.classList.remove('hidden');
+        breadcrumbTexto.textContent = pastaSelecionada.nome + '  /  📂 ' + subNome;
+
+        // Limpa a lista de arquivos e carrega os da subpasta
+        listaArquivos.innerHTML = '';
+        uploadAreaTexto.style.display = '';
+
+        fetch('/subpastas/' + subId + '/arquivos')
+            .then(r => r.json())
+            .then(arqs => {
+                arqs.forEach(arq =>
+                    renderizarCardArquivo(arq.id, arq.nome_original, '/uploads/' + arq.nome_arquivo)
+                );
+            })
+            .catch(err => console.error('Erro ao carregar arquivos da subpasta:', err));
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // FUNÇÃO: voltarParaRaiz
+    // Sai da subpasta e volta à visão da raiz:
+    //  - Reexibe a seção de subpastas
+    //  - Esconde o breadcrumb
+    //  - Recarrega os arquivos raiz da pasta original
+    // ──────────────────────────────────────────────────────────────
+    function voltarParaRaiz() {
+        subpastaAtual = null;
+        breadcrumb.classList.add('hidden');
+        subpastasSection.classList.remove('hidden');
+
+        listaArquivos.innerHTML = '';
+        uploadAreaTexto.style.display = '';
+        carregarArquivos(pastaSelecionada.id);
+    }
+
+    // Botão "← Voltar" no breadcrumb
+    btnVoltarRaiz.addEventListener('click', voltarParaRaiz);
+
+    // ── Listeners para criação de nova subpasta ──────────────────
+
+    // Mostra o formulário inline de nova subpasta
+    btnNovaSubpasta.addEventListener('click', () => {
+        novaSubpastaForm.classList.remove('hidden');
+        inputNomeSubpasta.focus();
+    });
+
+    // Cancela a criação e esconde o formulário
+    btnCancelarSubpasta.addEventListener('click', () => {
+        novaSubpastaForm.classList.add('hidden');
+        inputNomeSubpasta.value = '';
+    });
+
+    // Confirma a criação da subpasta via POST no servidor
+    btnCriarSubpasta.addEventListener('click', () => {
+        const nome = inputNomeSubpasta.value.trim();
+        if (!nome) { alert('Digite o nome da subpasta'); return; }
+
+        fetch('/pastas/' + pastaSelecionada.id + '/subpastas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome })
+        })
+        .then(r => r.json())
+        .then(sub => {
+            renderizarCardSubpasta(sub.id, sub.nome);
+            inputNomeSubpasta.value = '';
+            novaSubpastaForm.classList.add('hidden');
+        })
+        .catch(err => {
+            console.error('Erro ao criar subpasta:', err);
+            alert('Erro ao criar subpasta.');
+        });
+    });
+
+    // Criar subpasta ao pressionar Enter no campo de nome
+    inputNomeSubpasta.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') btnCriarSubpasta.click();
+        if (e.key === 'Escape') btnCancelarSubpasta.click();
+    });
 
     // Botão Upload+ no rodapé – sempre abre o seletor de arquivos,
     // mesmo quando já existem arquivos na lista
@@ -298,11 +577,13 @@ export function initModalNovaPasta() {
         const formData = new FormData();
         files.forEach(f => formData.append('arquivos', f));
 
+        // A rota de upload muda dependendo se estamos na raiz ou dentro de uma subpasta
+        const uploadUrl = subpastaAtual
+            ? '/subpastas/' + subpastaAtual.id + '/arquivos'
+            : '/pastas/' + pastaSelecionada.id + '/arquivos';
+
         // Envia para o servidor – o browser define o Content-Type automaticamente
-        fetch('/pastas/' + pastaSelecionada.id + '/arquivos', {
-            method: 'POST',
-            body: formData
-        })
+        fetch(uploadUrl, { method: 'POST', body: formData })
         .then(r => r.json())
         .then(inseridos => {
             // Para cada arquivo salvo, renderiza o card na lista
