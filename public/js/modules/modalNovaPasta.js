@@ -178,6 +178,31 @@ export function initModalNovaPasta() {
     }
 
     // ──────────────────────────────────────────────────────────────
+    // MÁSCARA DE CPF
+    // Formata a string removendo não-dígitos e aplicando 000.000.000-00
+    // ──────────────────────────────────────────────────────────────
+    function mascaraCpf(v) {
+        return v
+            .replace(/\D/g, '')           // remove tudo que não é dígito
+            .slice(0, 11)                 // limita a 11 dígitos
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d)/, '$1.$2')
+            .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    }
+
+    function onCpfInput(e) {
+        const inicio = e.target.selectionStart;
+        const antes  = e.target.value.length;
+        e.target.value = mascaraCpf(e.target.value);
+        // Mantém cursor na posição correta após reformatar
+        const diff = e.target.value.length - antes;
+        e.target.setSelectionRange(inicio + diff, inicio + diff);
+    }
+
+    CpfFFuncionario.addEventListener('input', onCpfInput);
+    editCpf.addEventListener('input', onCpfInput);
+
+    // ──────────────────────────────────────────────────────────────
     // FUNÇÃO: abrirModalPasta
     // Preenche o cabeçalho do modal com os dados da pasta clicada
     // e exibe o modal de upload/detalhes
@@ -245,7 +270,7 @@ export function initModalNovaPasta() {
         if (editFormUpload.classList.contains('hidden')) {
             // Preenche os campos com os dados atuais da pasta selecionada
             editNome.value  = pastaSelecionada.nome;
-            editCpf.value   = pastaSelecionada.cpf;
+            editCpf.value   = mascaraCpf(pastaSelecionada.cpf);
             editCargo.value = pastaSelecionada.cargo;
             editSetor.value = pastaSelecionada.setor;
             editFormUpload.classList.remove('hidden');
@@ -266,7 +291,7 @@ export function initModalNovaPasta() {
     btnSalvarEdicao.addEventListener('click', () => {
         // Validação: nenhum campo pode estar vazio ou sem seleção
         if (editNome.value.trim() === '')  { alert('Preencha o nome');       return; }
-        if (editCpf.value.trim() === '')   { alert('Preencha o CPF');        return; }
+        if (editCpf.value.replace(/\D/g,'').length < 11) { alert('Preencha o CPF completo (000.000.000-00)'); return; }
         if (editCargo.value === '__')      { alert('Selecione um cargo');     return; }
         if (editSetor.value === '__')      { alert('Selecione um setor');     return; }
 
@@ -930,7 +955,7 @@ export function initModalNovaPasta() {
     btnCriarPasta.addEventListener('click', () => {
         // Validação: todos os campos são obrigatórios
         if (NomePasta.value.trim() === '')      { alert('Preencha o nome da pasta');       return; }
-        if (CpfFFuncionario.value.trim() === '') { alert('Preencha o CPF do funcionário'); return; }
+        if (CpfFFuncionario.value.replace(/\D/g,'').length < 11) { alert('Preencha o CPF completo (000.000.000-00)'); return; }
         if (Cargo.value === '__')               { alert('Selecione um cargo');             return; }
         if (Setor.value === '__')               { alert('Selecione um setor');             return; }
 
