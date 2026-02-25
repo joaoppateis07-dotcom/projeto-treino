@@ -74,7 +74,58 @@
       </div>
     </div>
   </div>
-  <div id="modalUpload" class="modal hidden"></div>
+  <div id="modalUpload" class="modal hidden">
+    <div id="uploadModalBox" class="modal-box-upload">
+      <div id="uploadHeader">
+        <div id="uploadPastaInfo">
+          <span id="uploadInfoNome"></span>
+          <span id="uploadInfoCpf"></span>
+          <span id="uploadInfoCargo"></span>
+          <span id="uploadInfoSetor"></span>
+        </div>
+        <button id="btnEditar" class="btn btn-editar">Editar</button>
+      </div>
+      <div id="editFormUpload" class="hidden">
+        <input id="editNome" type="text" placeholder="Nome">
+        <input id="editCpf" type="text" placeholder="CPF">
+        <select id="editCargo">
+          <option value="__" selected disabled>Selecione um cargo</option>
+          <option>GERENTE COMERCIAL 1</option>
+          <option>GERENTE COMERCIAL 2</option>
+          <option>GERENTE COMERCIAL 3</option>
+          <option>GERENTE ADM</option>
+          <option>GERENTE OPERACIONAL</option>
+          <option>MASTER T.I</option>
+          <option>ASSISTENTE COMERCIAL</option>
+          <option>ASSISTENTE T.I</option>
+          <option>ASSISTENTE ADM</option>
+          <option>ASSISTENTE OPERACIONAL</option>
+          <option>DIRETORIA</option>
+        </select>
+        <select id="editSetor">
+          <option value="__" selected disabled>Selecione um Setor</option>
+          <option>T.I</option>
+          <option>OPERAÇÃO</option>
+          <option>COMERCIAL</option>
+          <option>ADM</option>
+          <option>DIRETORIA</option>
+        </select>
+        <div id="editBtns">
+          <button id="btnCancelarEdicao" class="btn btnCancelarPasta">CANCELAR</button>
+          <button id="btnSalvarEdicao" class="btn">SALVAR</button>
+        </div>
+      </div>
+      <div id="uploadArea">
+        <p id="uploadAreaTexto">Clique em &quot;Upload+&quot; para adicionar um arquivo</p>
+        <input type="file" id="fileInput" style="display:none" multiple>
+        <div id="listaArquivos"></div>
+      </div>
+      <div id="uploadFooter">
+        <button id="btnUploadMais" class="btn">Upload+</button>
+        <button id="btnSair" class="btn btn-sair">Sair</button>
+      </div>
+    </div>
+  </div>
   <script type="module" src="../js/app.js"></script>
 </body>
 </html>
