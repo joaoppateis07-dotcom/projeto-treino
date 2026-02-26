@@ -30,6 +30,51 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* Grupo de botões de navegação (← Módulos / Sair) */
+.topbar-nav {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Botão de navegação base */
+.btn-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-decoration: none;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: #ccc;
+    transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
+}
+.btn-nav:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(252, 172, 1, 0.45);
+    color: #fcac01;
+    transform: translateY(-1px);
+}
+
+/* Variante "Sair" — tonalidade levemente avermelhada */
+.btn-nav-logout {
+    border-color: rgba(220, 60, 60, 0.25);
+    background: rgba(220, 60, 60, 0.08);
+    color: #e88;
+}
+.btn-nav-logout:hover {
+    background: rgba(220, 60, 60, 0.18);
+    border-color: rgba(220, 60, 60, 0.6);
+    color: #ff8080;
+    transform: translateY(-1px);
 }
 
 /* ── Barra de pesquisa ───────────────────────────────────────────────
