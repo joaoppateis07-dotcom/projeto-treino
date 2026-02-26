@@ -96,21 +96,37 @@
     font-weight: 600;
 }
 
+/* ── Animação de entrada dos stat cards ────────────────────────────────── */
+@keyframes cardEntrada {
+    from { opacity: 0; transform: translateY(24px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+/* ── Animação de "pop" quando o número atualiza ────────────────────────── */
+@keyframes valorPop {
+    0%   { transform: scale(1);    }
+    40%  { transform: scale(1.18); color: #fcac01; }
+    100% { transform: scale(1);    }
+}
+
 /* Grid dos cards de estatísticas (Total de Documentos, Total Funcionários, etc.).
    auto-fit + minmax faz os cards quebrarem para a linha seguinte se a tela for pequena. */
 .stats {
     display: grid;
     gap: 20px;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
 /* Card individual de estatística na tela de dashboard */
 .card {
-    background: #2d2d2dfb;
-    padding: 50px;
-    border-radius: 20px;
-    box-shadow: 3px 10px 25px rgba(252, 172, 1, 0.304);
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(145deg, #333333, #272727);
+    padding: 36px 40px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 4px 24px rgba(252, 172, 1, 0.12), 0 1px 4px rgba(0,0,0,0.3);
+    transition: transform 0.30s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.30s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: cardEntrada 0.45s ease both;
 }
 
 /* Cor de fundo e cor de texto padrão do site inteiro */
@@ -122,21 +138,34 @@ body {
 /* Animação de "flutuar" quando o mouse passa sobre um card */
 .card:hover {
     transform: translateY(-7px);
+    box-shadow: 0 12px 36px rgba(252, 172, 1, 0.22), 0 2px 8px rgba(0,0,0,0.4);
 }
 
 /* Título pequeno dentro do card (ex: "Total de Documentos") */
 .card-title {
-    font-size: 12px;
-    opacity: 0.7;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.55;
     font-family: 'Montserrat', sans-serif;
-    margin-bottom: 18px;
+    margin-bottom: 14px;
 }
 
 /* Número em destaque dentro do card (ex: 0, 42...) */
 .card-value {
-    font-size: 24px;
-    font-weight: bold;
-    margin-top: 6px;
+    font-size: 2.4rem;
+    font-weight: 800;
+    margin-top: 4px;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+    display: inline-block; /* necessário para animação de scale funcionar */
+    transition: color 0.3s ease;
+}
+
+/* Quando JS adiciona a classe .atualizado, dispara o "pop" */
+.card-value.atualizado {
+    animation: valorPop 0.45s ease;
 }
 
 /* Overlay do modal "Nova Pasta": fundo escuro semitransparente que cobre toda a tela.
@@ -307,29 +336,90 @@ body {
     margin-bottom: 18px;
 }
 
+/* ── Animação de entrada dos cards de pasta ────────────────────────────── */
+@keyframes pastaEntrada {
+    from { opacity: 0; transform: translateY(18px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
 /* Card de cada pasta criada na tela principal.
    Ao clicar nele o JavaScript abre o modal de detalhes/upload dessa pasta. */
 .pasta {
-    background: #414141fb;  
-    padding: 40px 40px;
-    border-radius: 10px;
-    margin-top: 18px;
-    box-shadow: 3px 10px 25px rgba(252, 172, 1, 0.20);
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    min-height: 40px 40px;
+    background: linear-gradient(145deg, #484848, #3a3a3a);
+    padding: 18px 20px;
+    border-radius: 12px;
+    margin-top: 0;
+    min-height: 80px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), 0 1px 4px rgba(252, 172, 1, 0.10);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition:
+        transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+        background  0.28s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    animation: pastaEntrada 0.35s ease both;
+    user-select: none;
+    /* Apoia o delay escalonado definido pelo JS via style.animationDelay */
+}
+
+/* Ícone dentro do card de pasta */
+.pasta-icone {
+    font-size: 2rem;
+    line-height: 1;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+}
+
+/* Bloco de texto à direita do ícone */
+.pasta-texto {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0; /* permite text-overflow funcionar */
+}
+
+/* Nome principal da pasta */
+.pasta-nome {
+    font-size: 0.97rem;
+    font-weight: 700;
+    color: #f0f0f0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.01em;
+}
+
+/* Info secundária: CPF, cargo, captação etc. */
+.pasta-info {
+    font-size: 0.75rem;
+    color: #aaa;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.01em;
 }
 
 /* Animação de flutuar ao passar o mouse sobre uma pasta */
 .pasta:hover {
-    transform: translateY(-7px);
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 10px 32px rgba(252, 172, 1, 0.22), 0 2px 8px rgba(0,0,0,0.4);
+    background: linear-gradient(145deg, #525252, #424242);
+    border-color: rgba(252, 172, 1, 0.25);
 }
 
 /* Pasta selecionada com 1 clique – borda dourada + fundo levemente iluminado */
 .pasta.selecionada {
-    border: 2px solid rgb(200,144,1);
-    background: rgba(200,144,1,0.08);
+    border: 2px solid rgb(200, 144, 1);
+    background: linear-gradient(145deg, rgba(200,144,1,0.15), rgba(200,144,1,0.08));
     box-shadow: 0 0 0 3px rgba(200,144,1,0.18), 0 8px 32px rgba(0,0,0,0.45);
     transform: translateY(-4px);
+}
+.pasta.selecionada .pasta-nome {
+    color: #fcac01;
 }
 .pasta.selecionada:hover {
     transform: translateY(-7px);

@@ -1088,34 +1088,67 @@ export function initModalNovaPasta(options = {}) {
     // ──────────────────────────────────────────────────────────────
     // FUNÇÃO: criarCardPasta
     // Recebe os dados de uma pasta e cria o elemento HTML (div.pasta)
-    // que aparece na tela principal. Ao clicar nele, abre o modal
-    // de detalhes/upload da pasta correta.
+    // que aparece na tela principal.
+    // — Estrutura visual: ícone + nome em destaque + linha de meta-info
+    // — Um clique abre diretamente o modal (sem precisar de duplo clique)
     // ──────────────────────────────────────────────────────────────
     function criarCardPasta(dados) {
         const el = document.createElement('div');
-        // Texto exibido no card: nome, CPF (com máscara), cargo e setor
-        if (isComercial) {
-            el.textContent = dados.nome;
-        } else {
-            el.textContent = dados.nome + ' - ' + mascaraCpf(dados.cpf) + ' - ' + dados.cargo + ' - ' + dados.setor;
-        }
-        // Aplica o estilo visual do card
         el.classList.add('pasta');
         // Guarda o ID da pasta no atributo data-id para identificar qual abrir
         el.dataset.id = dados.id;
 
-        // 1 clique – seleciona (destaca) a pasta; tira a seleção das outras
+        // ── Ícone da pasta ──────────────────────────────────────────
+        const icone = document.createElement('div');
+        icone.classList.add('pasta-icone');
+        icone.textContent = isComercial ? '👤' : '📁';
+
+        // ── Nome em destaque ─────────────────────────────────────────
+        const nomeEl = document.createElement('div');
+        nomeEl.classList.add('pasta-nome');
+        nomeEl.textContent = dados.nome || '(sem nome)';
+
+        // ── Linha de informações secundárias ─────────────────────────
+        const infoEl = document.createElement('div');
+        infoEl.classList.add('pasta-info');
+        if (isComercial) {
+            // CPF + captação + parceiro para o módulo Comercial
+            const cpfFmt = mascaraCpf(dados.cpf);
+            infoEl.textContent = [
+                cpfFmt         ? 'CPF: ' + cpfFmt              : '',
+                dados.captacao ? 'Captação: ' + dados.captacao : '',
+                dados.parceiro ? 'Parceiro: ' + dados.parceiro : ''
+            ].filter(Boolean).join('  ·  ');
+        } else {
+            // CPF + cargo + setor para o módulo RH
+            infoEl.textContent = [
+                dados.cpf   ? mascaraCpf(dados.cpf) : '',
+                dados.cargo ? dados.cargo           : '',
+                dados.setor ? dados.setor           : ''
+            ].filter(Boolean).join('  ·  ');
+        }
+
+        el.appendChild(icone);
+
+        // ── Wrapper de texto ─────────────────────────────────────────
+        const textoWrap = document.createElement('div');
+        textoWrap.classList.add('pasta-texto');
+        textoWrap.appendChild(nomeEl);
+        textoWrap.appendChild(infoEl);
+        el.appendChild(textoWrap);
+
+        // ── Interação: clique único abre o modal ─────────────────────
+        // (duplo clique era confuso e não funciona bem em touch)
         el.addEventListener('click', () => {
+            // Tira seleção das outras pastas e marca esta como selecionada
             document.querySelectorAll('.pasta.selecionada').forEach(p => p.classList.remove('selecionada'));
             el.classList.add('selecionada');
+
+            // Busca os dados completos no array em memória pelo ID
+            const d = pastas.find(p => p.id == el.dataset.id);
+            if (d) abrirModalPasta(d);
         });
 
-        // 2 cliques – abre o modal da pasta
-        el.addEventListener('dblclick', () => {
-            const id = el.dataset.id;
-            const d  = pastas.find(p => p.id == id);
-            abrirModalPasta(d);
-        });
         return el;
     }
 
@@ -1129,9 +1162,12 @@ export function initModalNovaPasta(options = {}) {
         fetch('/pastas?modulo=' + moduloAtual)
             .then(r => r.json())
             .then(data => {
-                data.forEach(pasta => {
+                data.forEach((pasta, i) => {
                     pastas.push(pasta); // Adiciona no array local
-                    listaPastas.appendChild(criarCardPasta(pasta)); // Cria o card na tela
+                    const card = criarCardPasta(pasta);
+                    // Entrada escalonada: cada card aparece 60ms depois do anterior
+                    card.style.animationDelay = (i * 60) + 'ms';
+                    listaPastas.appendChild(card); // Cria o card na tela
                 });
             })
             .catch(err => console.error('Erro ao carregar pastas:', err));
@@ -1157,9 +1193,22 @@ export function initModalNovaPasta(options = {}) {
         fetch('/pastas/stats?modulo=' + moduloAtual)
             .then(r => r.json())
             .then(data => {
-                // Atualiza o valor exibido em cada card
-                if (elTotal) elTotal.textContent = data.total;
-                if (elHoje)  elHoje.textContent  = data.hoje;
+                // Função auxiliar: atualiza valor e dispara animação "pop"
+                function setValor(el, valor) {
+                    if (!el) return;
+                    if (el.textContent !== String(valor)) {
+                        el.textContent = valor;
+                        // Remove a classe primeiro para poder re-adicionar (reinicia animação)
+                        el.classList.remove('atualizado');
+                        // Force reflow para reiniciar a animação CSS
+                        void el.offsetWidth;
+                        el.classList.add('atualizado');
+                        // Remove a classe após animação terminar
+                        setTimeout(() => el.classList.remove('atualizado'), 500);
+                    }
+                }
+                setValor(elTotal, data.total);
+                setValor(elHoje,  data.hoje);
             })
             .catch(err => console.error('Erro ao buscar stats:', err));
     }
