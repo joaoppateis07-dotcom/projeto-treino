@@ -357,13 +357,26 @@ export function initModalNovaPasta(options = {}) {
             // Atualiza a variável da pasta atualmente selecionada
             pastaSelecionada = { ...pastaSelecionada, nome, cpf, cargo, setor, captacao, parceiro };
 
-            // Atualiza o texto do card na lista de pastas na tela principal
+            // Atualiza o card na lista de pastas com os novos dados
             const pastaEl = listaPastas.querySelector(`[data-id="${id}"]`);
             if (pastaEl) {
-                if (isComercial) {
-                    pastaEl.textContent = nome;
-                } else {
-                    pastaEl.textContent = nome + ' - ' + mascaraCpf(cpf) + ' - ' + cargo + ' - ' + setor;
+                const nomeSpan  = pastaEl.querySelector('.pasta-nome');
+                const infoSpan  = pastaEl.querySelector('.pasta-info');
+                if (nomeSpan) nomeSpan.textContent = nome;
+                if (infoSpan) {
+                    if (isComercial) {
+                        infoSpan.textContent = [
+                            cpf      ? 'CPF: ' + mascaraCpf(cpf)   : '',
+                            captacao ? 'Captação: ' + captacao      : '',
+                            parceiro ? 'Parceiro: ' + parceiro      : ''
+                        ].filter(Boolean).join('  ·  ');
+                    } else {
+                        infoSpan.textContent = [
+                            cpf   ? mascaraCpf(cpf) : '',
+                            cargo ? cargo           : '',
+                            setor ? setor           : ''
+                        ].filter(Boolean).join('  ·  ');
+                    }
                 }
             }
 

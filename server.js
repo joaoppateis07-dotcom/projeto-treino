@@ -20,13 +20,8 @@ db.run(
     if (err) console.log("Erro criando tabela pastas:", err.message);
     else {
       console.log("Tabela 'pastas' pronta ✅");
-      // Adiciona coluna modulo para separar RH e COMERCIAL
-      db.run(`ALTER TABLE pastas ADD COLUMN modulo TEXT DEFAULT 'RH'`, () => {});
-      // Colunas específicas do módulo Comercial
-      db.run(`ALTER TABLE pastas ADD COLUMN captacao TEXT DEFAULT ''`, () => {});
-      db.run(`ALTER TABLE pastas ADD COLUMN parceiro TEXT DEFAULT ''`, () => {});
-      // Data/hora de criação da pasta (para o card "Registros do Dia")
-      db.run(`ALTER TABLE pastas ADD COLUMN criado_em TEXT DEFAULT (datetime('now'))`, () => {});
+      // Garante que todas as colunas existem (migration via PRAGMA)
+      garantirColunas();
     }
   }
 );
@@ -74,6 +69,33 @@ db.run(
 // NULL = arquivo fica na raiz da pasta principal.
 // Ignora erro se a coluna já existir (migration segura).
 db.run(`ALTER TABLE arquivos ADD COLUMN subpasta_id INTEGER DEFAULT NULL`, () => {});
+
+// ── Migrations seguras via PRAGMA ──────────────────────────────────────────────
+// Verifica quais colunas existem em 'pastas' e adiciona as que faltam.
+// Desta forma a migração NÃO depende de timing de callbacks ou de versão do SQLite.
+function garantirColunas() {
+  db.all("PRAGMA table_info(pastas)", (err, cols) => {
+    if (err) return console.error("PRAGMA table_info falhou:", err.message);
+    const existentes = new Set(cols.map(c => c.name));
+
+    const adicionar = [
+      ["modulo",    "TEXT", "DEFAULT 'RH'"],
+      ["captacao",  "TEXT", "DEFAULT ''"],
+      ["parceiro",  "TEXT", "DEFAULT ''"],
+      ["criado_em", "TEXT", ""],           // sem default – preenchido pelo INSERT
+    ];
+
+    adicionar.forEach(([coluna, tipo, def]) => {
+      if (!existentes.has(coluna)) {
+        const sql = `ALTER TABLE pastas ADD COLUMN ${coluna} ${tipo} ${def}`.trim();
+        db.run(sql, (e) => {
+          if (e) console.error(`Falha ao adicionar coluna '${coluna}':`, e.message);
+          else   console.log(`Coluna '${coluna}' adicionada ✅`);
+        });
+      }
+    });
+  });
+}
 
 // Garante que a pasta de uploads existe no disco
 const UPLOADS_DIR = path.join(__dirname, "uploads");
@@ -173,13 +195,19 @@ app.get("/",       (_req, res) => res.sendFile(path.join(__dirname, "public", "i
 // Usado pelos cards de resumo no topo dos módulos
 app.get("/pastas/stats", (req, res) => {
   const modulo = req.query.modulo || 'RH';
-  // Data de hoje no formato YYYY-MM-DD (SQLite usa ISO 8601 em criado_em)
   const hoje = new Date().toISOString().slice(0, 10);
   db.get(
     "SELECT COUNT(*) AS total, SUM(CASE WHEN date(criado_em) = ? THEN 1 ELSE 0 END) AS hoje FROM pastas WHERE modulo = ?",
     [hoje, modulo],
     (err, row) => {
-      if (err) return res.status(500).json({ error: err.message });
+      if (err) {
+        // criado_em pode não existir ainda (primeira execução após migration) – retorna só o total
+        return db.get(
+          "SELECT COUNT(*) AS total FROM pastas WHERE modulo = ?",
+          [modulo],
+          (_e2, row2) => res.json({ total: (row2 && row2.total) || 0, hoje: 0 })
+        );
+      }
       res.json({ total: row.total || 0, hoje: row.hoje || 0 });
     }
   );

@@ -1,8 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+
 /* ============================================================
    app.css  –  Folha de estilos principal do sistema RH Documentos
    Paleta de cores:
-     - Fundo escuro principal : #1c1c1c / #222 / #252525 / #2d2d2d
-     - Cards e caixas         : #3e3e3e / #414141
+     - Fundo escuro principal : #161616 (mesmo do select.html)
+     - Cards e caixas         : #232323 / #1b1b1b (gradiente)
+     - Destaque dourado       : rgb(200, 144, 1)  /  rgba(252,172,1,...)
      - Destaque dourado       : rgb(200, 144, 1)  /  rgba(252,172,1,...)
      - Texto principal        : #ffffff
      - Texto secundário      : rgba(255,255,255,0.55)
@@ -83,8 +86,8 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #252525;
-    border: 1px solid rgba(252,172,1,0.18);
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(252,172,1,0.14);
     border-radius: 12px;
     padding: 10px 16px;
     margin-top: 16px;
@@ -92,8 +95,8 @@
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 #barraPesquisa:focus-within {
-    border-color: rgba(200,144,1,0.7);
-    box-shadow: 0 0 0 3px rgba(200,144,1,0.1);
+    border-color: rgba(200,144,1,0.65);
+    box-shadow: 0 0 0 3px rgba(200,144,1,0.10);
 }
 
 /* Ícone de lupa */
@@ -174,10 +177,17 @@
     animation: cardEntrada 0.45s ease both;
 }
 
-/* Cor de fundo e cor de texto padrão do site inteiro */
+/* Cor de fundo e cor de texto padrão do site inteiro
+   Mesmo estilo do select.html: fundo bem escuro com reflexos dourados nos cantos */
 body {
-    background: rgb(28, 28, 28);
-    color: white;
+    margin: 0;
+    background:
+        radial-gradient(circle at 15% 10%, rgba(200,144,1,0.10), transparent 28%),
+        radial-gradient(circle at 85% 5%,  rgba(200,144,1,0.08), transparent 32%),
+        #161616;
+    color: #f0f0f0;
+    font-family: 'Montserrat', sans-serif;
+    min-height: 100vh;
 }
 
 /* Animação de "flutuar" quando o mouse passa sobre um card */
@@ -227,16 +237,16 @@ body {
     backdrop-filter: blur(6px);
 }
 
-/* Caixa branca/escura centralizada dentro do overlay do modal.
-   Usada tanto no modal Nova Pasta quanto poderia ser reusada em outros modais. */
+/* Caixa centralizada do modal — alinhada ao estilo do select.html */
 .modal-box {
-  background: #3e3e3e;
-  padding: 35px;
-  border-radius: 20px;
-  box-shadow: 3px 10px 25px rgba(252, 172, 1, 0.20);
+  background: linear-gradient(145deg, #232323, #1b1b1b);
+  padding: 36px;
+  border-radius: 18px;
+  border: 1px solid rgba(252,172,1,0.16);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.03);
   width: 100%;
   max-width: 420px;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px);
 }
 
 /* Linha de ações (botões) no rodapé de um modal genérico */
@@ -248,18 +258,39 @@ body {
 }
 
 .btn {
-    background: rgb(200, 144, 1);
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-weight: 600;
+    background: linear-gradient(135deg, rgb(200,144,1), rgb(170,118,0));
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.04em;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
     border: none;
+    color: #111;
+    box-shadow: 0 2px 10px rgba(200,144,1,0.25);
+}
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 22px rgba(200,144,1,0.35);
+    background: linear-gradient(135deg, rgb(220,164,10), rgb(190,138,0));
+}
+.btn:active {
+    transform: translateY(0);
+    box-shadow: none;
 }
 
-/* Variante do botão padrão: cor vermelha semitransparente para ações de cancelar */
+/* Variante cancelar — vermelho sutil */
 .btnCancelarPasta {
-    background: rgba(248, 29, 29, 0.347);
+    background: rgba(200, 50, 50, 0.25);
+    color: #ffaaaa;
+    box-shadow: none;
+    border: 1px solid rgba(200,50,50,0.2);
+}
+.btnCancelarPasta:hover {
+    background: rgba(200, 50, 50, 0.4);
+    box-shadow: 0 4px 14px rgba(200,50,50,0.2);
 }
 
 /* ── Nova Pasta: inputs & selects ──────────────────────────────
@@ -268,38 +299,42 @@ body {
 #inputNomePasta,
 #inputCpfFFuncionario {
     border-radius: 10px;
-    padding: 11px 18px;
-    border: 1.5px solid rgba(255,255,255,0.08);
-    background: #252525;
-    color: #fff;
+    padding: 12px 18px;
+    border: 1px solid rgba(252,172,1,0.14);
+    background: rgba(0,0,0,0.35);
+    color: #f0f0f0;
     width: 100%;
     font-size: 14px;
+    font-family: 'Montserrat', sans-serif;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
     box-sizing: border-box;
 }
 
-/* Borda dourada quando o campo está em foco (cursor dentro do input) */
+/* Borda dourada quando o campo está em foco */
 #inputNomePasta:focus,
 #inputCpfFFuncionario:focus {
     border-color: rgb(200, 144, 1);
-    background: #2d2d2d;
+    background: rgba(0,0,0,0.5);
+    box-shadow: 0 0 0 3px rgba(200,144,1,0.12);
 }
 
-/* Texto de placeholder mais discreto (branco com baixa opacidade) */
+/* Placeholder discreto */
 #inputNomePasta::placeholder,
 #inputCpfFFuncionario::placeholder {
-    color: rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.28);
 }
 
-/* Título "Nova Pasta" dentro do modal, em dourado */
+/* Título "Nova Pasta" dentro do modal */
 #tituloModalNovaPasta {
     text-align: center;
     font-family: 'Montserrat', sans-serif;
-    padding: 20px 0 24px;
-    margin-bottom: 4px;
-    font-size: 20px;
-    letter-spacing: 0.5px;
+    padding: 8px 0 20px;
+    margin-bottom: 0;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     color: rgb(200, 144, 1);
 }
 
@@ -311,29 +346,31 @@ body {
 #selectCaptacao,
 #selectParceiro {
     border-radius: 10px;
-    padding: 11px 18px;
-    border: 1.5px solid rgba(255,255,255,0.08);
-    background: #252525;
-    color: #fff;
+    padding: 12px 18px;
+    border: 1px solid rgba(252,172,1,0.14);
+    background: rgba(0,0,0,0.35);
+    color: #f0f0f0;
     width: 100%;
     font-size: 14px;
+    font-family: 'Montserrat', sans-serif;
     outline: none;
     cursor: pointer;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23c89001' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 16px center;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
     box-sizing: border-box;
 }
 
-/* Borda dourada nos selects quando estão em foco */
+/* Borda dourada nos selects em foco */
 #selectCargo:focus,
 #selectSetor:focus,
 #selectCaptacao:focus,
 #selectParceiro:focus {
     border-color: rgb(200, 144, 1);
-    background-color: #2d2d2d;
+    background-color: rgba(0,0,0,0.5);
+    box-shadow: 0 0 0 3px rgba(200,144,1,0.12);
 }
 
 /* Cor de fundo das opções dentro do dropdown (dropdown aberto pelo browser) */
@@ -367,18 +404,25 @@ body {
     gap: 14px;
 }
 
-/* Título principal "RH Documentos" na topbar */
+/* Título principal na topbar — estilo select.html */
 #tituloRhDocumentos {
-    text-align: center;
     font-family: 'Montserrat', sans-serif;
-    margin-bottom: 18px;
+    font-size: 1.55rem;
+    font-weight: 800;
+    margin: 0 0 4px;
+    letter-spacing: 0.01em;
+    color: #f0f0f0;
 }
 
-/* Subtítulo "Sistema de Gestão de Documentos" abaixo do título principal */
+/* Subtítulo/kicker abaixo do título principal */
 #sistemaDeGestaoDeDocumentos {
-    text-align: center;
     font-family: 'Montserrat', sans-serif;
-    margin-bottom: 18px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    margin: 0;
 }
 
 /* ── Animação de entrada dos cards de pasta ────────────────────────────── */
@@ -495,26 +539,26 @@ body {
 /* Caixa principal do modal de upload: ocupa 80% da tela (largura e altura).
    Organização: flex em coluna – cabeçalho > form edição > área arquivos > rodapé. */
 .modal-box-upload {
-    background: #222222;
+    background: linear-gradient(160deg, #222222, #1a1a1a);
     width: 80vw;
     height: 80vh;
-    border-radius: 20px;
-    box-shadow: 0 8px 48px rgba(252,172,1,0.18), 0 2px 12px rgba(0,0,0,0.6);
+    border-radius: 18px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03);
+    border: 1px solid rgba(252,172,1,0.15);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border: 1px solid rgba(252,172,1,0.12);
 }
 
 /* Cabeçalho do modal de upload: exibe as infos da pasta (nome, CPF, etc.)
-   e o botão Editar. flex-wrap permite quebrar linha em telas pequenas. */
+   e o botão Editar. */
 #uploadHeader {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 18px 28px;
-    background: #252525;
-    border-bottom: 1px solid rgba(252,172,1,0.18);
+    background: linear-gradient(90deg, #1e1e1e, #1a1a1a);
+    border-bottom: 1px solid rgba(252,172,1,0.16);
     flex-wrap: wrap;
     gap: 10px;
 }
@@ -541,54 +585,56 @@ body {
     color: #fff;
 }
 
-/* Botão azul "Editar" no cabeçalho do modal de upload */
+/* Botão Editar com tom azul refinado */
 .btn-editar {
-    background: #1a6fc4;
+    background: linear-gradient(135deg, #1a6fc4, #1254a0);
     color: white;
+    box-shadow: 0 2px 10px rgba(26,111,196,0.3);
 }
-
-/* Escurece levemente o botão Editar ao passar o mouse */
 .btn-editar:hover {
-    background: #1558a0;
+    background: linear-gradient(135deg, #2080d8, #1560b0);
+    box-shadow: 0 5px 16px rgba(26,111,196,0.4);
 }
 
 /* ── Upload modal: edit form ────────────────────────────────────
    Formulário de edição que aparece abaixo do cabeçalho ao clicar em "Editar".
    Fica oculto por padrão (classe 'hidden') e só aparece quando o JS remove a classe. */
 #editFormUpload {
-    background: #252525;
-    padding: 16px 28px;
+    background: #1b1b1b;
+    padding: 14px 28px;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     align-items: center;
-    border-bottom: 1px solid rgba(252,172,1,0.15);
+    border-bottom: 1px solid rgba(252,172,1,0.12);
 }
 
-/* Inputs e selects dentro do formulário de edição: tema escuro com borda dourada no foco */
+/* Inputs e selects dentro do formulário de edição */
 #editFormUpload input,
 #editFormUpload select {
     border-radius: 10px;
     padding: 9px 14px;
-    border: 1.5px solid rgba(255,255,255,0.1);
-    background: #1c1c1c;
-    color: #fff;
+    border: 1px solid rgba(252,172,1,0.14);
+    background: rgba(0,0,0,0.4);
+    color: #f0f0f0;
     font-size: 13px;
+    font-family: 'Montserrat', sans-serif;
     flex: 1;
     min-width: 150px;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 /* Borda dourada quando o campo de edição está em foco */
 #editFormUpload input:focus,
 #editFormUpload select:focus {
     border-color: rgb(200,144,1);
+    box-shadow: 0 0 0 3px rgba(200,144,1,0.10);
 }
 
 /* Placeholder discreto nos inputs de edição */
 #editFormUpload input::placeholder {
-    color: rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.25);
 }
 
 /* Cor de fundo das opções nos selects de edição */
