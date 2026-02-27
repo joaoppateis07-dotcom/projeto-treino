@@ -4,8 +4,18 @@ const fs      = require("fs");
 const express = require("express");
 const multer  = require("multer");
 
+// ── Caminhos persistentes ─────────────────────────────────────────────────────
+// Em produção (Render) use variáveis de ambiente apontando para o Persistent Disk.
+// Localmente usa os caminhos padrão do projeto.
+// No Render: DB_PATH=/var/data/db.sqlite  |  UPLOADS_DIR=/var/data/uploads
+const DB_PATH   = process.env.DB_PATH    || path.join(__dirname, "db.sqlite");
+const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(__dirname, "uploads");
+
+// Garante que o diretório de uploads existe (no disco persistente ou local)
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
 // ── Banco de dados ────────────────────────────────────────────────────────────
-const db = new sqlite3.Database("db.sqlite");
+const db = new sqlite3.Database(DB_PATH);
 
 // Tabela de pastas (funcionários)
 db.run(
@@ -97,13 +107,7 @@ function garantirColunas() {
   });
 }
 
-// Garante que a pasta de uploads existe no disco
-const UPLOADS_DIR = path.join(__dirname, "uploads");
-if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR);
-
-// ── Configuração do Multer ────────────────────────────────────────────────────
-// Salva os arquivos em /uploads com um nome único (timestamp + número aleatório)
-// para evitar que dois arquivos com o mesmo nome se sobrescrevam.
+// ── Configuração do Multer ──────────────────────────────────────────────────
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
   filename: (_req, file, cb) => {

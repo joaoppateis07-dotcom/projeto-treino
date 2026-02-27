@@ -1,0 +1,19 @@
+# Dependências
+node_modules/
+
+# Banco de dados local — NÃO commitar; em produção o arquivo fica no Persistent Disk do Render
+db.sqlite
+db.sqlite-shm
+db.sqlite-wal
+
+# Arquivos enviados pelos usuários — NÃO commitar; em produção ficam no Persistent Disk
+uploads/
+
+# Logs
+npm-debug.log*
+*.log
+
+# Editor
+.DS_Store
+Thumbs.db
+.env
