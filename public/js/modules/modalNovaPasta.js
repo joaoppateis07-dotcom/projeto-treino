@@ -355,8 +355,6 @@ export function initModalNovaPasta(options = {}) {
         // Captura o ID da pasta que está sendo editada
         const id    = pastaSelecionada.id;
         const nome  = editNome.value.trim();
-        const data_nascimento = (!isComercial && editDataNascimento) ? editDataNascimento.value : '';
-        const faltas          = (!isComercial && editFaltasInput)    ? parseInt(editFaltasInput.value, 10) || 0 : 0;
 
         // Envia a requisição PUT para o servidor atualizar no banco de dados
         fetch('/pastas/' + id, {
