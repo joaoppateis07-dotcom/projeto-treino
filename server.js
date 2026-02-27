@@ -237,6 +237,22 @@ app.get("/pastas/stats", (req, res) => {
   }
 });
 
+// Lista todos os funcionários RH que fazem aniversário no mês atual
+app.get("/pastas/aniversarios-mes", (req, res) => {
+  const mes = new Date().toISOString().slice(5, 7); // "02"
+  db.all(
+    `SELECT nome, data_nascimento FROM pastas
+     WHERE modulo = 'RH' AND data_nascimento != '' AND data_nascimento IS NOT NULL
+     AND strftime('%m', data_nascimento) = ?
+     ORDER BY strftime('%d', data_nascimento)`,
+    [mes],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows || []);
+    }
+  );
+});
+
 // Lista todas as pastas (usada ao carregar a página)
 app.get("/pastas", (req, res) => {
   const modulo = req.query.modulo || 'RH';

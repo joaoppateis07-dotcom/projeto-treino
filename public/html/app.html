@@ -42,7 +42,7 @@
           <div class="card-title">Total Funcionários</div>
           <div class="card-value" id="cardTotalFuncionarios">0</div>
         </div>
-        <div class="card">
+        <div class="card" id="cardAniversariosWrapper" title="Clique para ver os aniversariantes">
           <div class="card-title">Aniversários do Mês</div>
           <div class="card-value" id="cardAniversarios">0</div>
         </div>
@@ -273,6 +273,15 @@
     <span id="toastMensagem"></span>
     <button id="btnDesfazer" class="toast-btn-desfazer">Desfazer</button>
     <div id="toastBarra"></div>
+  </div>
+
+  <!-- Modal: lista de aniversariantes do mês -->
+  <div id="modalAniversarios" class="hidden">
+    <div id="modalAniversariosBox">
+      <h2>&#127874; Aniversários do Mês</h2>
+      <div id="listaAniversariantes"></div>
+      <button id="btnFecharAniversarios" class="btn btnCancelarPasta">Fechar</button>
+    </div>
   </div>
 
   <!-- Script principal carregado como módulo ES6. -->

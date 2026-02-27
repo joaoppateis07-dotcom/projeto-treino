@@ -1262,4 +1262,51 @@ export function initModalNovaPasta(options = {}) {
 
     // Atualiza os cards de resumo assim que as pastas forem carregadas
     atualizarStats();
+
+    // ── MODAL ANIVERSARIANTES DO MÊS ────────────────────────────────
+    // Ao clicar no card de Aniversários do Mês (somente RH)
+    // busca a lista de funcionários com aniversário no mês atual
+    // e exibe no overlay #modalAniversarios
+    // ──────────────────────────────────────────────────────────────
+    const cardAnivWrapper    = document.getElementById('cardAniversariosWrapper');
+    const modalAniv          = document.getElementById('modalAniversarios');
+    const listaAniv          = document.getElementById('listaAniversariantes');
+    const btnFecharAniv      = document.getElementById('btnFecharAniversarios');
+
+    if (cardAnivWrapper && modalAniv) {
+        cardAnivWrapper.addEventListener('click', () => {
+            listaAniv.innerHTML = '<p class="aniver-vazio">Carregando…</p>';
+            modalAniv.classList.remove('hidden');
+
+            fetch('/pastas/aniversarios-mes')
+                .then(r => r.json())
+                .then(pessoas => {
+                    listaAniv.innerHTML = '';
+                    if (!pessoas.length) {
+                        listaAniv.innerHTML = '<p class="aniver-vazio">Nenhum aniversariante este mês 🎂</p>';
+                        return;
+                    }
+                    pessoas.forEach(p => {
+                        const item = document.createElement('div');
+                        item.classList.add('aniver-item');
+                        // Exibe o dia/mês formatado (ex: "15/02")
+                        const [ano, mes, dia] = p.data_nascimento.split('-');
+                        item.innerHTML = `🎂 ${p.nome}<span>Aniversário: ${dia}/${mes}</span>`;
+                        listaAniv.appendChild(item);
+                    });
+                })
+                .catch(() => {
+                    listaAniv.innerHTML = '<p class="aniver-vazio">Erro ao carregar aniversariantes.</p>';
+                });
+        });
+
+        if (btnFecharAniv) {
+            btnFecharAniv.addEventListener('click', () => modalAniv.classList.add('hidden'));
+        }
+        if (modalAniv) {
+            modalAniv.addEventListener('click', (e) => {
+                if (e.target === modalAniv) modalAniv.classList.add('hidden');
+            });
+        }
+    }
 }
