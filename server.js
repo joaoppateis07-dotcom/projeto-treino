@@ -279,16 +279,19 @@ app.get("/pastas/aniversarios-mes", (req, res) => {
 
 // Lista todos os registros de falta do mês atual (com nome do funcionário)
 app.get("/registros-falta", (req, res) => {
-  const mes = req.query.mes || new Date().toISOString().slice(0, 7); // YYYY-MM
+  const mes      = req.query.mes      || new Date().toISOString().slice(0, 7); // YYYY-MM
+  const pasta_id = req.query.pasta_id || null;
+  const filtroExtra = pasta_id ? ' AND rf.pasta_id = ?' : '';
+  const params      = pasta_id ? [mes, pasta_id] : [mes];
   db.all(
     `SELECT rf.id, rf.pasta_id, rf.data_falta, rf.tem_atestado,
             rf.atestado_inicio, rf.atestado_fim, rf.criado_em,
             p.nome AS funcionario_nome
      FROM registros_falta rf
      JOIN pastas p ON p.id = rf.pasta_id
-     WHERE strftime('%Y-%m', rf.data_falta) = ?
+     WHERE strftime('%Y-%m', rf.data_falta) = ?${filtroExtra}
      ORDER BY rf.data_falta DESC, p.nome`,
-    [mes],
+    params,
     (err, rows) => {
       if (err) return res.status(500).json({ error: err.message });
       res.json(rows || []);

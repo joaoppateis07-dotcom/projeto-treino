@@ -233,6 +233,26 @@ export function initModalNovaPasta(options = {}) {
             uploadInfoCargo.textContent = 'Cargo: '  + dados.cargo;
             uploadInfoSetor.textContent = 'Setor: '  + dados.setor;
             if (uploadInfoDataNascimento) uploadInfoDataNascimento.textContent = dados.data_nascimento ? 'Nasc: ' + dados.data_nascimento : '';
+
+            // Busca o total de faltas do funcionário no mês atual e exibe no cabeçalho
+            const uploadInfoFaltasMes = document.getElementById('uploadInfoFaltasMes');
+            if (uploadInfoFaltasMes) {
+                uploadInfoFaltasMes.textContent = '';
+                uploadInfoFaltasMes.className = '';
+                const mesRef = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; })();
+                fetch(`/registros-falta?mes=${mesRef}&pasta_id=${dados.id}`)
+                    .then(r => r.json())
+                    .then(lista => {
+                        const qtd = lista.length;
+                        if (qtd === 0) {
+                            uploadInfoFaltasMes.textContent = 'Faltas no mês: 0';
+                        } else {
+                            uploadInfoFaltasMes.textContent = `Faltas no mês: ${qtd}`;
+                            uploadInfoFaltasMes.classList.add('info-faltas-alerta');
+                        }
+                    })
+                    .catch(() => { uploadInfoFaltasMes.textContent = ''; });
+            }
         } else {
             if (uploadInfoCpf) uploadInfoCpf.textContent = 'CPF: ' + mascaraCpf(dados.cpf);
             if (uploadInfoCaptacao) uploadInfoCaptacao.textContent = 'Captação: ' + (dados.captacao || '');
@@ -1312,7 +1332,7 @@ export function initModalNovaPasta(options = {}) {
     const btnCancelarFalta     = document.getElementById('btnCancelarFalta');
     const inputDataFalta       = document.getElementById('inputDataFalta');
     const inputAtestadoInicio  = document.getElementById('inputAtestadoInicio');
-    const inputAtestadoFim     = document.getElementById('inputAtestadoFim');
+    const inputAtestadoDias    = document.getElementById('inputAtestadoDias');
     const campoDataFalta       = document.getElementById('campoDataFalta');
     const camposAtestado       = document.getElementById('camposAtestado');
 
@@ -1423,7 +1443,7 @@ export function initModalNovaPasta(options = {}) {
                 selectPessoaFalta.value = '';
                 inputDataFalta.value = '';
                 inputAtestadoInicio.value = '';
-                inputAtestadoFim.value = '';
+                inputAtestadoDias.value = '';
                 document.querySelector('input[name="temAtestado"][value="nao"]').checked = true;
                 atualizarCamposAtestado();
                 formAdicionarFalta.classList.remove('hidden');
@@ -1458,13 +1478,18 @@ export function initModalNovaPasta(options = {}) {
                 const body = { pasta_id: Number(pasta_id), tem_atestado: temAtestado };
 
                 if (temAtestado) {
-                    if (!inputAtestadoInicio.value || !inputAtestadoFim.value) {
-                        alert('Preencha as datas de início e fim do atestado.');
+                    const dias = parseInt(inputAtestadoDias.value, 10);
+                    if (!inputAtestadoInicio.value || !dias || dias < 1) {
+                        alert('Preencha a data de início e a quantidade de dias do atestado.');
                         return;
                     }
-                    body.atestado_inicio = inputAtestadoInicio.value;
-                    body.atestado_fim    = inputAtestadoFim.value;
-                    body.data_falta      = inputAtestadoInicio.value; // usa início como data referência
+                    const inicio = new Date(inputAtestadoInicio.value + 'T00:00:00');
+                    const fim    = new Date(inicio);
+                    fim.setDate(fim.getDate() + dias - 1);
+                    const toISO = d => d.toISOString().split('T')[0];
+                    body.atestado_inicio = toISO(inicio);
+                    body.atestado_fim    = toISO(fim);
+                    body.data_falta      = toISO(inicio); // usa início como data referência
                 } else {
                     if (!inputDataFalta.value) {
                         alert('Preencha a data da falta.');

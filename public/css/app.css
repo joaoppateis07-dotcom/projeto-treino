@@ -880,6 +880,12 @@ body {
     color: rgba(255,255,255,0.55);
 }
 
+/* Faltas no mês: destaque quando > 0 */
+#uploadInfoFaltasMes.info-faltas-alerta {
+    color: rgb(220, 100, 60);
+    font-weight: 700;
+}
+
 /* Primeiro span (Nome) recebe destaque maior, pois é o nome do funcionário */
 #uploadPastaInfo span:first-child {
     font-size: 16px;
