@@ -74,7 +74,23 @@ db.run(
     else console.log("Tabela 'subpastas' pronta ✅");
   }
 );
-
+// Tabela de registros de falta por funcionário
+db.run(
+  `CREATE TABLE IF NOT EXISTS registros_falta (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    pasta_id        INTEGER NOT NULL,
+    data_falta      TEXT    NOT NULL,          -- YYYY-MM-DD (dia da falta ou início)
+    tem_atestado    INTEGER NOT NULL DEFAULT 0, -- 0 = não, 1 = sim
+    atestado_inicio TEXT    NOT NULL DEFAULT '',
+    atestado_fim    TEXT    NOT NULL DEFAULT '',
+    criado_em       TEXT    NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (pasta_id) REFERENCES pastas(id) ON DELETE CASCADE
+  )`,
+  (err) => {
+    if (err) console.log("Erro criando tabela registros_falta:", err.message);
+    else console.log("Tabela 'registros_falta' pronta \u2705");
+  }
+);
 // Adiciona coluna subpasta_id em arquivos para saber a qual subpasta o arquivo pertence.
 // NULL = arquivo fica na raiz da pasta principal.
 // Ignora erro se a coluna já existir (migration segura).
@@ -205,19 +221,25 @@ app.get("/pastas/stats", (req, res) => {
   const mes  = new Date().toISOString().slice(5, 7); // "02" para fevereiro
 
   if (modulo === 'RH') {
+    // faltas_total = registros deste mês na tabela registros_falta
+    const mes = new Date().toISOString().slice(5, 7);
+    const ano = new Date().getFullYear().toString();
     db.get(
       `SELECT COUNT(*) AS total,
-              SUM(CASE WHEN data_nascimento != '' AND strftime('%m', data_nascimento) = ? THEN 1 ELSE 0 END) AS aniversarios,
-              SUM(COALESCE(faltas, 0)) AS faltas_total
+              SUM(CASE WHEN data_nascimento != '' AND strftime('%m', data_nascimento) = ? THEN 1 ELSE 0 END) AS aniversarios
        FROM pastas WHERE modulo = 'RH'`,
       [mes],
       (err, row) => {
-        if (err) {
-          return db.get("SELECT COUNT(*) AS total FROM pastas WHERE modulo = 'RH'",
-            (_e2, row2) => res.json({ total: (row2 && row2.total) || 0, aniversarios: 0, faltas_total: 0 })
-          );
-        }
-        res.json({ total: row.total || 0, aniversarios: row.aniversarios || 0, faltas_total: row.faltas_total || 0 });
+        const total = (row && row.total) || 0;
+        const aniversarios = (row && row.aniversarios) || 0;
+        db.get(
+          `SELECT COUNT(*) AS faltas_total FROM registros_falta
+           WHERE strftime('%Y-%m', data_falta) = ?`,
+          [ano + '-' + mes],
+          (_e2, rf) => {
+            res.json({ total, aniversarios, faltas_total: (rf && rf.faltas_total) || 0 });
+          }
+        );
       }
     );
   } else {
@@ -251,6 +273,60 @@ app.get("/pastas/aniversarios-mes", (req, res) => {
       res.json(rows || []);
     }
   );
+});
+
+// ── Rotas: Registros de Falta ─────────────────────────────────────────────────
+
+// Lista todos os registros de falta do mês atual (com nome do funcionário)
+app.get("/registros-falta", (req, res) => {
+  const mes = req.query.mes || new Date().toISOString().slice(0, 7); // YYYY-MM
+  db.all(
+    `SELECT rf.id, rf.pasta_id, rf.data_falta, rf.tem_atestado,
+            rf.atestado_inicio, rf.atestado_fim, rf.criado_em,
+            p.nome AS funcionario_nome
+     FROM registros_falta rf
+     JOIN pastas p ON p.id = rf.pasta_id
+     WHERE strftime('%Y-%m', rf.data_falta) = ?
+     ORDER BY rf.data_falta DESC, p.nome`,
+    [mes],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows || []);
+    }
+  );
+});
+
+// Cria um novo registro de falta
+app.post("/registros-falta", (req, res) => {
+  const { pasta_id, data_falta, tem_atestado, atestado_inicio, atestado_fim } = req.body;
+  if (!pasta_id || !data_falta)
+    return res.status(400).json({ error: "pasta_id e data_falta são obrigatórios" });
+  const atestado = tem_atestado ? 1 : 0;
+  db.run(
+    `INSERT INTO registros_falta (pasta_id, data_falta, tem_atestado, atestado_inicio, atestado_fim)
+     VALUES (?, ?, ?, ?, ?)`,
+    [pasta_id, data_falta, atestado, atestado_inicio || '', atestado_fim || ''],
+    function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      // Retorna o registro recém-criado com o nome do funcionário
+      db.get(
+        `SELECT rf.id, rf.pasta_id, rf.data_falta, rf.tem_atestado,
+                rf.atestado_inicio, rf.atestado_fim, p.nome AS funcionario_nome
+         FROM registros_falta rf JOIN pastas p ON p.id = rf.pasta_id
+         WHERE rf.id = ?`,
+        [this.lastID],
+        (_e, row) => res.status(201).json(row)
+      );
+    }
+  );
+});
+
+// Remove um registro de falta
+app.delete("/registros-falta/:id", (req, res) => {
+  db.run("DELETE FROM registros_falta WHERE id = ?", [req.params.id], function (err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ ok: true });
+  });
 });
 
 // Lista todas as pastas (usada ao carregar a página)

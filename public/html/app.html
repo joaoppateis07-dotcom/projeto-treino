@@ -46,7 +46,7 @@
           <div class="card-title">Aniversários do Mês</div>
           <div class="card-value" id="cardAniversarios">0</div>
         </div>
-        <div class="card">
+        <div class="card" id="cardFaltasWrapper" title="Clique para gerenciar faltas">
           <div class="card-title">Faltas</div>
           <div class="card-value" id="cardFaltas">0</div>
         </div>
@@ -125,10 +125,7 @@
         <input id="inputDataNascimento" type="date" placeholder="Data de Nascimento">
       </div>
 
-      <!-- Campo: Número de faltas -->
-      <div id="divFaltas">
-        <input id="inputFaltas" type="number" placeholder="Faltas" min="0" value="0">
-      </div>
+
       <div id="btnCriar&Cancelar">
         <button id="btnCancelarPasta" class="btn btnCancelarPasta">CANCELAR</button>
         <button id="btnCriarPasta" class="btn">CRIAR</button>
@@ -155,7 +152,6 @@
           <span id="uploadInfoCargo"></span>  <!-- Cargo -->
           <span id="uploadInfoSetor"></span>  <!-- Setor -->
           <span id="uploadInfoDataNascimento"></span>  <!-- Data de Nascimento -->
-          <span id="uploadInfoFaltas"></span>           <!-- Faltas -->
         </div>
         <!-- Botão azul que mostra/esconde o formulário de edição abaixo -->
         <button id="btnEditar" class="btn btn-editar">Editar</button>
@@ -193,9 +189,8 @@
           <option>DIRETORIA</option>
         </select>
 
-        <!-- Edição: Data de nascimento e faltas -->
+        <!-- Edição: Data de nascimento -->
         <input id="editDataNascimento" type="date">
-        <input id="editFaltas" type="number" min="0" placeholder="Faltas">
 
         <!-- Botões: CANCELAR fecha o form sem salvar, SALVAR envia PUT ao servidor -->
         <div id="editBtns">
@@ -281,6 +276,64 @@
       <h2>&#127874; Aniversários do Mês</h2>
       <div id="listaAniversariantes"></div>
       <button id="btnFecharAniversarios" class="btn btnCancelarPasta">Fechar</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL FALTAS – Exibe registros de faltas e permite adicionar novas.
+       ============================================================ -->
+  <div id="modalFaltas" class="modal hidden">
+    <div class="modal-box" id="modalFaltasBox">
+
+      <!-- Cabeçalho: título + botão Adicionar Falta -->
+      <div id="modalFaltasHeader">
+        <h2>Faltas do Mês</h2>
+        <button id="btnAbrirFormFalta" class="btn btn-gold">+ Adicionar Falta</button>
+      </div>
+
+      <!-- Lista das faltas registradas -->
+      <div id="listaFaltas"></div>
+
+      <!-- Formulário para adicionar nova falta (oculto por padrão) -->
+      <div id="formAdicionarFalta" class="hidden">
+        <h3 id="formFaltaTitle">Nova Falta</h3>
+
+        <label for="selectPessoaFalta">Funcionário</label>
+        <select id="selectPessoaFalta">
+          <option value="">Selecione uma pessoa...</option>
+        </select>
+
+        <label>Atestado?</label>
+        <div id="toggleAtestado">
+          <label class="toggle-opcao">
+            <input type="radio" name="temAtestado" value="nao" checked> Não
+          </label>
+          <label class="toggle-opcao">
+            <input type="radio" name="temAtestado" value="sim"> Sim
+          </label>
+        </div>
+
+        <!-- Data da falta (visível quando NÃO tem atestado) -->
+        <div id="campoDataFalta">
+          <label for="inputDataFalta">Data da Falta</label>
+          <input type="date" id="inputDataFalta">
+        </div>
+
+        <!-- Período do atestado (visível quando TEM atestado) -->
+        <div id="camposAtestado" class="hidden">
+          <label for="inputAtestadoInicio">Atestado – Início</label>
+          <input type="date" id="inputAtestadoInicio">
+          <label for="inputAtestadoFim">Atestado – Fim</label>
+          <input type="date" id="inputAtestadoFim">
+        </div>
+
+        <div id="formFaltaBotoes">
+          <button id="btnSalvarFalta" class="btn btn-gold">Salvar</button>
+          <button id="btnCancelarFalta" class="btn btnCancelarPasta">Cancelar</button>
+        </div>
+      </div>
+
+      <button id="btnFecharFaltas" class="btn btnCancelarPasta">Fechar</button>
     </div>
   </div>
 

@@ -424,6 +424,209 @@ body {
     padding: 10px 28px;
 }
 
+/* ============================================================
+   MODAL FALTAS
+   ============================================================ */
+#modalFaltas {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1500;
+    backdrop-filter: blur(6px);
+}
+#modalFaltasBox {
+    background: linear-gradient(145deg, #232323, #1b1b1b);
+    border: 1px solid rgba(252,172,1,0.2);
+    border-radius: 18px;
+    padding: 36px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+#modalFaltasHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+}
+#modalFaltasHeader h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(200,144,1);
+    margin: 0;
+}
+#btnAbrirFormFalta {
+    font-size: 12px;
+    padding: 8px 16px;
+}
+#listaFaltas {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+.falta-item {
+    background: rgba(252,172,1,0.06);
+    border: 1px solid rgba(252,172,1,0.15);
+    border-radius: 10px;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.falta-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.falta-item-nome {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f0f0f0;
+}
+.falta-item-data {
+    font-size: 12px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.45);
+}
+.falta-atestado-badge {
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(252,172,1,0.18);
+    color: rgb(200,144,1);
+    border-radius: 6px;
+    padding: 3px 8px;
+    white-space: nowrap;
+}
+.btn-excluir-falta {
+    background: transparent;
+    border: 1px solid rgba(255,80,80,0.35);
+    color: rgba(255,100,100,0.8);
+    border-radius: 7px;
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    flex-shrink: 0;
+}
+.btn-excluir-falta:hover {
+    background: rgba(255,80,80,0.15);
+    color: #ff6060;
+}
+.faltas-vazio {
+    text-align: center;
+    color: rgba(255,255,255,0.35);
+    font-size: 14px;
+    padding: 20px 0;
+}
+/* Formulário nova falta */
+#formAdicionarFalta {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 20px;
+    margin-top: 8px;
+}
+#formFaltaTitle {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: rgb(200,144,1);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0 0 16px;
+}
+#selectPessoaFalta {
+    width: 100%;
+    background: #1e1e1e;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #e0e0e0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    margin-bottom: 14px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c89001' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+}
+#selectPessoaFalta:focus {
+    border-color: rgba(252,172,1,0.5);
+}
+#formAdicionarFalta label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+}
+#toggleAtestado {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 16px;
+}
+.toggle-opcao {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #e0e0e0;
+    cursor: pointer;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+}
+.toggle-opcao input[type="radio"] {
+    accent-color: rgb(200,144,1);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+#campoDataFalta input,
+#camposAtestado input {
+    width: 100%;
+    background: #1e1e1e;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #e0e0e0;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    margin-bottom: 14px;
+    outline: none;
+    color-scheme: dark;
+    box-sizing: border-box;
+}
+#campoDataFalta input:focus,
+#camposAtestado input:focus {
+    border-color: rgba(252,172,1,0.5);
+}
+#formFaltaBotoes {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+}
+#btnFecharFaltas {
+    display: block;
+    margin: 22px auto 0;
+    padding: 10px 28px;
+}
+/* Cursor pointer no card faltas */
+#cardFaltasWrapper {
+    cursor: pointer;
+}
+
 /* Título "Nova Pasta" dentro do modal */
 #tituloModalNovaPasta {
     text-align: center;

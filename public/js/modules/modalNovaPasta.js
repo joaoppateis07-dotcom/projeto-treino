@@ -50,9 +50,8 @@ export function initModalNovaPasta(options = {}) {
     const Cargo            = document.getElementById('selectCargo');
     // Select para o setor do funcionário (RH)
     const Setor            = document.getElementById('selectSetor');
-    // Campos RH: data de nascimento e faltas
+    // Campos RH: data de nascimento
     const DataNascimento   = document.getElementById('inputDataNascimento');
-    const FaltasInput      = document.getElementById('inputFaltas');
     // Container onde os cards das pastas criadas serão exibidos na tela
     const listaPastas      = document.getElementById('listaPastas');
 
@@ -113,7 +112,6 @@ export function initModalNovaPasta(options = {}) {
     const uploadInfoCaptacao = document.getElementById('uploadInfoCaptacao');
     const uploadInfoParceiro = document.getElementById('uploadInfoParceiro');
     const uploadInfoDataNascimento = document.getElementById('uploadInfoDataNascimento');
-    const uploadInfoFaltas         = document.getElementById('uploadInfoFaltas');
     // Botão azul "Editar" no cabeçalho do modal – mostra/esconde o form de edição
     const btnEditar        = document.getElementById('btnEditar');
     // Formulário de edição (nome, CPF, cargo, setor) – fica oculto até clicar em Editar
@@ -126,7 +124,6 @@ export function initModalNovaPasta(options = {}) {
     const editCaptacao     = document.getElementById('editCaptacao');
     const editParceiro     = document.getElementById('editParceiro');
     const editDataNascimento = document.getElementById('editDataNascimento');
-    const editFaltasInput    = document.getElementById('editFaltas');
     // Botão "SALVAR" no formulário de edição
     const btnSalvarEdicao  = document.getElementById('btnSalvarEdicao');
     // Botão "CANCELAR" no formulário de edição
@@ -236,7 +233,6 @@ export function initModalNovaPasta(options = {}) {
             uploadInfoCargo.textContent = 'Cargo: '  + dados.cargo;
             uploadInfoSetor.textContent = 'Setor: '  + dados.setor;
             if (uploadInfoDataNascimento) uploadInfoDataNascimento.textContent = dados.data_nascimento ? 'Nasc: ' + dados.data_nascimento : '';
-            if (uploadInfoFaltas) uploadInfoFaltas.textContent = dados.faltas != null ? 'Faltas: ' + dados.faltas : '';
         } else {
             if (uploadInfoCpf) uploadInfoCpf.textContent = 'CPF: ' + mascaraCpf(dados.cpf);
             if (uploadInfoCaptacao) uploadInfoCaptacao.textContent = 'Captação: ' + (dados.captacao || '');
@@ -301,7 +297,6 @@ export function initModalNovaPasta(options = {}) {
                 editCargo.value = pastaSelecionada.cargo;
                 editSetor.value = pastaSelecionada.setor;
                 if (editDataNascimento) editDataNascimento.value = pastaSelecionada.data_nascimento || '';
-                if (editFaltasInput)    editFaltasInput.value    = pastaSelecionada.faltas != null ? pastaSelecionada.faltas : 0;
             } else {
                 if (editCpf) editCpf.value = mascaraCpf(pastaSelecionada.cpf);
                 if (editCaptacao) editCaptacao.value = pastaSelecionada.captacao || '__';
@@ -332,7 +327,6 @@ export function initModalNovaPasta(options = {}) {
         let captacao = '';
         let parceiro = '';
         let data_nascimento = '';
-        let faltas = 0;
 
         if (!isComercial) {
             if (editCpf.value.replace(/\D/g,'').length < 11) { alert('Preencha o CPF completo (000.000.000-00)'); return; }
@@ -342,7 +336,6 @@ export function initModalNovaPasta(options = {}) {
             cargo = editCargo.value;
             setor = editSetor.value;
             data_nascimento = editDataNascimento ? editDataNascimento.value : '';
-            faltas = editFaltasInput ? parseInt(editFaltasInput.value, 10) || 0 : 0;
         } else {
             if (editCpf && editCpf.value.replace(/\D/g,'').length < 11) { alert('Preencha o CPF completo (000.000.000-00)'); return; }
             if (editCaptacao && editCaptacao.value === '__') { alert('Selecione a forma de captação'); return; }
@@ -360,17 +353,17 @@ export function initModalNovaPasta(options = {}) {
         fetch('/pastas/' + id, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nome, cpf, cargo, setor, captacao, parceiro, modulo: moduloAtual, data_nascimento, faltas })
+            body: JSON.stringify({ nome, cpf, cargo, setor, captacao, parceiro, modulo: moduloAtual, data_nascimento })
         })
         .then(r => r.json())
         .then(() => {
             // Atualiza os dados no array local (sem precisar recarregar a página)
             const idx = pastas.findIndex(p => p.id == id);
             if (idx !== -1) {
-                pastas[idx] = { ...pastas[idx], nome, cpf, cargo, setor, captacao, parceiro, data_nascimento, faltas };
+                pastas[idx] = { ...pastas[idx], nome, cpf, cargo, setor, captacao, parceiro, data_nascimento };
             }
             // Atualiza a variável da pasta atualmente selecionada
-            pastaSelecionada = { ...pastaSelecionada, nome, cpf, cargo, setor, captacao, parceiro, data_nascimento, faltas };
+            pastaSelecionada = { ...pastaSelecionada, nome, cpf, cargo, setor, captacao, parceiro, data_nascimento };
 
             // Atualiza o card na lista de pastas com os novos dados
             const pastaEl = listaPastas.querySelector(`[data-id="${id}"]`);
@@ -390,8 +383,7 @@ export function initModalNovaPasta(options = {}) {
                             cpf   ? mascaraCpf(cpf) : '',
                             cargo ? cargo           : '',
                             setor ? setor           : '',
-                            data_nascimento ? 'Nasc: ' + data_nascimento : '',
-                            faltas > 0      ? 'Faltas: ' + faltas        : ''
+                            data_nascimento ? 'Nasc: ' + data_nascimento : ''
                         ].filter(Boolean).join('  ·  ');
                     }
                 }
@@ -404,7 +396,6 @@ export function initModalNovaPasta(options = {}) {
                 uploadInfoCargo.textContent = 'Cargo: ' + cargo;
                 uploadInfoSetor.textContent = 'Setor: ' + setor;
                 if (uploadInfoDataNascimento) uploadInfoDataNascimento.textContent = data_nascimento ? 'Nasc: ' + data_nascimento : '';
-                if (uploadInfoFaltas) uploadInfoFaltas.textContent = 'Faltas: ' + faltas;
             } else {
                 if (uploadInfoCpf) uploadInfoCpf.textContent = 'CPF: ' + mascaraCpf(cpf);
                 if (uploadInfoCaptacao) uploadInfoCaptacao.textContent = 'Captação: ' + captacao;
@@ -1060,7 +1051,6 @@ export function initModalNovaPasta(options = {}) {
         let captacao = '';
         let parceiro = '';
         let data_nascimento = '';
-        let faltas = 0;
 
         if (!isComercial) {
             if (CpfFFuncionario.value.replace(/\D/g,'').length < 11) { alert('Preencha o CPF completo (000.000.000-00)'); return; }
@@ -1070,7 +1060,6 @@ export function initModalNovaPasta(options = {}) {
             cargo = Cargo.value;
             setor = Setor.value;
             data_nascimento = DataNascimento ? DataNascimento.value : '';
-            faltas = FaltasInput ? parseInt(FaltasInput.value, 10) || 0 : 0;
         } else {
             if (CpfFFuncionario && CpfFFuncionario.value.replace(/\D/g,'').length < 11) { alert('Preencha o CPF completo (000.000.000-00)'); return; }
             if (Captacao && Captacao.value === '__') { alert('Selecione a forma de captação'); return; }
@@ -1087,7 +1076,7 @@ export function initModalNovaPasta(options = {}) {
         fetch('/pastas', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nome, cpf, cargo, setor, captacao, parceiro, modulo: moduloAtual, data_nascimento, faltas })
+            body: JSON.stringify({ nome, cpf, cargo, setor, captacao, parceiro, modulo: moduloAtual, data_nascimento })
         })
         .then(r => r.json())
         .then(data => {
@@ -1105,7 +1094,6 @@ export function initModalNovaPasta(options = {}) {
                 Cargo.value = '__';
                 Setor.value = '__';
                 if (DataNascimento) DataNascimento.value = '';
-                if (FaltasInput)    FaltasInput.value    = '0';
             } else {
                 if (CpfFFuncionario) CpfFFuncionario.value = '';
                 if (Captacao) Captacao.value = '__';
@@ -1163,8 +1151,7 @@ export function initModalNovaPasta(options = {}) {
                 dados.cpf   ? mascaraCpf(dados.cpf) : '',
                 dados.cargo ? dados.cargo           : '',
                 dados.setor ? dados.setor           : '',
-                dados.data_nascimento ? 'Nasc: ' + dados.data_nascimento : '',
-                dados.faltas > 0      ? 'Faltas: ' + dados.faltas        : ''
+                dados.data_nascimento ? 'Nasc: ' + dados.data_nascimento : ''
             ].filter(Boolean).join('  ·  ');
         }
 
@@ -1306,6 +1293,200 @@ export function initModalNovaPasta(options = {}) {
         if (modalAniv) {
             modalAniv.addEventListener('click', (e) => {
                 if (e.target === modalAniv) modalAniv.classList.add('hidden');
+            });
+        }
+    }
+
+    // ── MODAL FALTAS ──────────────────────────────────────────────
+    // Ao clicar no card de Faltas (somente RH):
+    // exibe a lista de faltas do mês atual e permite adicionar/excluir.
+    // ──────────────────────────────────────────────────────────────
+    const cardFaltasWrapper    = document.getElementById('cardFaltasWrapper');
+    const modalFaltas          = document.getElementById('modalFaltas');
+    const listaFaltas          = document.getElementById('listaFaltas');
+    const btnFecharFaltas      = document.getElementById('btnFecharFaltas');
+    const btnAbrirFormFalta    = document.getElementById('btnAbrirFormFalta');
+    const formAdicionarFalta   = document.getElementById('formAdicionarFalta');
+    const selectPessoaFalta    = document.getElementById('selectPessoaFalta');
+    const btnSalvarFalta       = document.getElementById('btnSalvarFalta');
+    const btnCancelarFalta     = document.getElementById('btnCancelarFalta');
+    const inputDataFalta       = document.getElementById('inputDataFalta');
+    const inputAtestadoInicio  = document.getElementById('inputAtestadoInicio');
+    const inputAtestadoFim     = document.getElementById('inputAtestadoFim');
+    const campoDataFalta       = document.getElementById('campoDataFalta');
+    const camposAtestado       = document.getElementById('camposAtestado');
+
+    // Retorna o mês atual no formato YYYY-MM
+    function mesAtual() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    // Formata data YYYY-MM-DD → DD/MM/YYYY
+    function formatarData(iso) {
+        if (!iso) return '—';
+        const [a, m, d] = iso.split('-');
+        return `${d}/${m}/${a}`;
+    }
+
+    // Carrega e renderiza a lista de faltas do mês atual
+    async function carregarFaltas() {
+        listaFaltas.innerHTML = '<p class="faltas-vazio">Carregando…</p>';
+        try {
+            const r = await fetch(`/registros-falta?mes=${mesAtual()}`);
+            const dados = await r.json();
+            listaFaltas.innerHTML = '';
+            if (!dados.length) {
+                listaFaltas.innerHTML = '<p class="faltas-vazio">Nenhuma falta registrada este mês.</p>';
+                return;
+            }
+            dados.forEach(f => {
+                const item = document.createElement('div');
+                item.classList.add('falta-item');
+
+                let dataTexto;
+                if (f.tem_atestado) {
+                    dataTexto = `Atestado: ${formatarData(f.atestado_inicio)} – ${formatarData(f.atestado_fim)}`;
+                } else {
+                    dataTexto = `Falta em: ${formatarData(f.data_falta)}`;
+                }
+
+                item.innerHTML = `
+                    <div class="falta-item-info">
+                        <span class="falta-item-nome">${f.funcionario_nome}</span>
+                        <span class="falta-item-data">${dataTexto}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+                        ${f.tem_atestado ? '<span class="falta-atestado-badge">Atestado</span>' : ''}
+                        <button class="btn-excluir-falta" data-id="${f.id}">Excluir</button>
+                    </div>`;
+
+                item.querySelector('.btn-excluir-falta').addEventListener('click', async () => {
+                    if (!confirm('Excluir este registro de falta?')) return;
+                    await fetch(`/registros-falta/${f.id}`, { method: 'DELETE' });
+                    await carregarFaltas();
+                    atualizarStats();
+                });
+
+                listaFaltas.appendChild(item);
+            });
+        } catch {
+            listaFaltas.innerHTML = '<p class="faltas-vazio">Erro ao carregar faltas.</p>';
+        }
+    }
+
+    // Popula o select com os funcionários RH
+    async function popularSelectPessoas() {
+        selectPessoaFalta.innerHTML = '<option value="">Selecione uma pessoa...</option>';
+        try {
+            const r = await fetch('/pastas?modulo=RH');
+            const lista = await r.json();
+            (Array.isArray(lista) ? lista : (lista.pastas || [])).forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = p.nome;
+                selectPessoaFalta.appendChild(opt);
+            });
+        } catch { /* silencioso */ }
+    }
+
+    // Mostra/oculta campos conforme a escolha de atestado
+    function atualizarCamposAtestado() {
+        const temAtestado = document.querySelector('input[name="temAtestado"]:checked')?.value === 'sim';
+        camposAtestado.classList.toggle('hidden', !temAtestado);
+        campoDataFalta.classList.toggle('hidden', temAtestado);
+    }
+
+    if (cardFaltasWrapper && modalFaltas) {
+        // Abre o modal de faltas
+        cardFaltasWrapper.addEventListener('click', async () => {
+            formAdicionarFalta.classList.add('hidden');
+            btnAbrirFormFalta.classList.remove('hidden');
+            modalFaltas.classList.remove('hidden');
+            await carregarFaltas();
+        });
+
+        // Fecha ao clicar no botão Fechar
+        if (btnFecharFaltas) {
+            btnFecharFaltas.addEventListener('click', () => modalFaltas.classList.add('hidden'));
+        }
+        // Fecha ao clicar fora do box
+        modalFaltas.addEventListener('click', (e) => {
+            if (e.target === modalFaltas) modalFaltas.classList.add('hidden');
+        });
+
+        // Exibe o formulário de adicionar falta
+        if (btnAbrirFormFalta) {
+            btnAbrirFormFalta.addEventListener('click', async () => {
+                await popularSelectPessoas();
+                // Reseta o form
+                selectPessoaFalta.value = '';
+                inputDataFalta.value = '';
+                inputAtestadoInicio.value = '';
+                inputAtestadoFim.value = '';
+                document.querySelector('input[name="temAtestado"][value="nao"]').checked = true;
+                atualizarCamposAtestado();
+                formAdicionarFalta.classList.remove('hidden');
+                btnAbrirFormFalta.classList.add('hidden');
+            });
+        }
+
+        // Alternância de campos ao mudar a opção de atestado
+        document.querySelectorAll('input[name="temAtestado"]').forEach(r => {
+            r.addEventListener('change', atualizarCamposAtestado);
+        });
+
+        // Cancela o formulário
+        if (btnCancelarFalta) {
+            btnCancelarFalta.addEventListener('click', () => {
+                formAdicionarFalta.classList.add('hidden');
+                btnAbrirFormFalta.classList.remove('hidden');
+            });
+        }
+
+        // Salva a falta
+        if (btnSalvarFalta) {
+            btnSalvarFalta.addEventListener('click', async () => {
+                const pasta_id = selectPessoaFalta.value;
+                const temAtestado = document.querySelector('input[name="temAtestado"]:checked')?.value === 'sim';
+
+                if (!pasta_id) {
+                    alert('Selecione um funcionário.');
+                    return;
+                }
+
+                const body = { pasta_id: Number(pasta_id), tem_atestado: temAtestado };
+
+                if (temAtestado) {
+                    if (!inputAtestadoInicio.value || !inputAtestadoFim.value) {
+                        alert('Preencha as datas de início e fim do atestado.');
+                        return;
+                    }
+                    body.atestado_inicio = inputAtestadoInicio.value;
+                    body.atestado_fim    = inputAtestadoFim.value;
+                    body.data_falta      = inputAtestadoInicio.value; // usa início como data referência
+                } else {
+                    if (!inputDataFalta.value) {
+                        alert('Preencha a data da falta.');
+                        return;
+                    }
+                    body.data_falta = inputDataFalta.value;
+                }
+
+                try {
+                    const res = await fetch('/registros-falta', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+                    if (!res.ok) throw new Error();
+                    formAdicionarFalta.classList.add('hidden');
+                    btnAbrirFormFalta.classList.remove('hidden');
+                    await carregarFaltas();
+                    atualizarStats();
+                } catch {
+                    alert('Erro ao salvar falta. Tente novamente.');
+                }
             });
         }
     }
