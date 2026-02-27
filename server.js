@@ -233,7 +233,13 @@ app.get("/pastas/stats", (req, res) => {
         const total = (row && row.total) || 0;
         const aniversarios = (row && row.aniversarios) || 0;
         db.get(
-          `SELECT COUNT(*) AS faltas_total FROM registros_falta
+          `SELECT SUM(
+              CASE
+                WHEN tem_atestado = 1 AND atestado_inicio != '' AND atestado_fim != ''
+                THEN CAST(julianday(atestado_fim) - julianday(atestado_inicio) + 1 AS INTEGER)
+                ELSE 1
+              END
+            ) AS faltas_total FROM registros_falta
            WHERE strftime('%Y-%m', data_falta) = ?`,
           [ano + '-' + mes],
           (_e2, rf) => {

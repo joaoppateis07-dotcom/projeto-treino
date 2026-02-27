@@ -234,7 +234,7 @@ export function initModalNovaPasta(options = {}) {
             uploadInfoSetor.textContent = 'Setor: '  + dados.setor;
             if (uploadInfoDataNascimento) uploadInfoDataNascimento.textContent = dados.data_nascimento ? 'Nasc: ' + dados.data_nascimento : '';
 
-            // Busca o total de faltas do funcionário no mês atual e exibe no cabeçalho
+            // Busca o total de DIAS de falta do funcionário no mês atual e exibe no cabeçalho
             const uploadInfoFaltasMes = document.getElementById('uploadInfoFaltasMes');
             if (uploadInfoFaltasMes) {
                 uploadInfoFaltasMes.textContent = '';
@@ -243,11 +243,26 @@ export function initModalNovaPasta(options = {}) {
                 fetch(`/registros-falta?mes=${mesRef}&pasta_id=${dados.id}`)
                     .then(r => r.json())
                     .then(lista => {
-                        const qtd = lista.length;
-                        if (qtd === 0) {
-                            uploadInfoFaltasMes.textContent = 'Faltas no mês: 0';
+                        // Calcula o total de dias (atestado pode cobrir vários dias)
+                        const [ano, mes] = mesRef.split('-').map(Number);
+                        const primeiroDiaMes = new Date(ano, mes - 1, 1);
+                        const ultimoDiaMes   = new Date(ano, mes, 0);
+                        const diasNoMes = (inicio, fim) => {
+                            const d1 = new Date(Math.max(new Date(inicio + 'T00:00:00'), primeiroDiaMes));
+                            const d2 = new Date(Math.min(new Date(fim   + 'T00:00:00'), ultimoDiaMes));
+                            return d2 < d1 ? 0 : Math.round((d2 - d1) / 86400000) + 1;
+                        };
+                        const totalDias = lista.reduce((acc, f) => {
+                            if (f.tem_atestado && f.atestado_inicio && f.atestado_fim) {
+                                return acc + diasNoMes(f.atestado_inicio, f.atestado_fim);
+                            }
+                            return acc + 1;
+                        }, 0);
+                        const label = totalDias === 1 ? 'dia' : 'dias';
+                        if (totalDias === 0) {
+                            uploadInfoFaltasMes.textContent = 'Faltas no mês: 0 dias';
                         } else {
-                            uploadInfoFaltasMes.textContent = `Faltas no mês: ${qtd}`;
+                            uploadInfoFaltasMes.textContent = `Faltas no mês: ${totalDias} ${label}`;
                             uploadInfoFaltasMes.classList.add('info-faltas-alerta');
                         }
                     })
