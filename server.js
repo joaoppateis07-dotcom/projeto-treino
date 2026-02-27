@@ -11,8 +11,10 @@ const multer  = require("multer");
 const DB_PATH   = process.env.DB_PATH    || path.join(__dirname, "db.sqlite");
 const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(__dirname, "uploads");
 
-// Garante que o diretório de uploads existe (no disco persistente ou local)
+// Garante que o diretório de uploads e o diretório do banco existem
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+const DB_DIR = path.dirname(DB_PATH);
+if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true });
 
 // ── Banco de dados ────────────────────────────────────────────────────────────
 const db = new sqlite3.Database(DB_PATH);

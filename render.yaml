@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: projeto-treino
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+
+    # Disco persistente: sobrevive a deploys e reinícios.
+    # Os dados ficam em /var/data e são mantidos entre deployments.
+    disk:
+      name: dados-persistentes
+      mountPath: /var/data
+      sizeGB: 1
+
+    envVars:
+      - key: DB_PATH
+        value: /var/data/db.sqlite
+      - key: UPLOADS_DIR
+        value: /var/data/uploads

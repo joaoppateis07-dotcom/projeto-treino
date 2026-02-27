@@ -1404,6 +1404,9 @@ export function initModalNovaPasta(options = {}) {
 
                 item.querySelector('.btn-excluir-falta').addEventListener('click', async () => {
                     if (!confirm('Excluir este registro de falta?')) return;
+                    // Animação de saída antes de remover
+                    item.classList.add('falta-item-saindo');
+                    await new Promise(r => setTimeout(r, 320));
                     await fetch(`/registros-falta/${f.id}`, { method: 'DELETE' });
                     await carregarFaltas();
                     atualizarStats();
