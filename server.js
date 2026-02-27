@@ -279,17 +279,39 @@ app.get("/pastas/aniversarios-mes", (req, res) => {
 
 // Lista todos os registros de falta do mês atual (com nome do funcionário)
 app.get("/registros-falta", (req, res) => {
-  const mes      = req.query.mes      || new Date().toISOString().slice(0, 7); // YYYY-MM
-  const pasta_id = req.query.pasta_id || null;
-  const filtroExtra = pasta_id ? ' AND rf.pasta_id = ?' : '';
-  const params      = pasta_id ? [mes, pasta_id] : [mes];
+  const { mes, all, inicio, fim, pasta_id } = req.query;
+
+  let whereClauses = [];
+  let params        = [];
+
+  // Modo 1: intervalo explícito de datas (para exportação)
+  if (inicio && fim) {
+    whereClauses.push("rf.data_falta >= ? AND rf.data_falta <= ?");
+    params.push(inicio, fim);
+  // Modo 2: todos os registros (para histórico completo na modal)
+  } else if (all === '1') {
+    // sem filtro de data
+  // Modo 3 (padrão): filtrar pelo mês informado (para stats)
+  } else {
+    const mesRef = mes || new Date().toISOString().slice(0, 7);
+    whereClauses.push("strftime('%Y-%m', rf.data_falta) = ?");
+    params.push(mesRef);
+  }
+
+  if (pasta_id) {
+    whereClauses.push("rf.pasta_id = ?");
+    params.push(pasta_id);
+  }
+
+  const where = whereClauses.length ? 'WHERE ' + whereClauses.join(' AND ') : '';
+
   db.all(
     `SELECT rf.id, rf.pasta_id, rf.data_falta, rf.tem_atestado,
             rf.atestado_inicio, rf.atestado_fim, rf.criado_em,
             p.nome AS funcionario_nome
      FROM registros_falta rf
      JOIN pastas p ON p.id = rf.pasta_id
-     WHERE strftime('%Y-%m', rf.data_falta) = ?${filtroExtra}
+     ${where}
      ORDER BY rf.data_falta DESC, p.nome`,
     params,
     (err, rows) => {

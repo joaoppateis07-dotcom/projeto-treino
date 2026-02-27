@@ -1335,6 +1335,12 @@ export function initModalNovaPasta(options = {}) {
     const inputAtestadoDias    = document.getElementById('inputAtestadoDias');
     const campoDataFalta       = document.getElementById('campoDataFalta');
     const camposAtestado       = document.getElementById('camposAtestado');
+    const btnExportarFaltas    = document.getElementById('btnExportarFaltas');
+    const formExportarFaltas   = document.getElementById('formExportarFaltas');
+    const inputExportInicio    = document.getElementById('inputExportInicio');
+    const inputExportFim       = document.getElementById('inputExportFim');
+    const btnConfirmarExport   = document.getElementById('btnConfirmarExport');
+    const btnCancelarExport    = document.getElementById('btnCancelarExport');
 
     // Retorna o mês atual no formato YYYY-MM
     function mesAtual() {
@@ -1349,15 +1355,15 @@ export function initModalNovaPasta(options = {}) {
         return `${d}/${m}/${a}`;
     }
 
-    // Carrega e renderiza a lista de faltas do mês atual
+    // Carrega e renderiza o histórico completo de faltas (todas as datas)
     async function carregarFaltas() {
         listaFaltas.innerHTML = '<p class="faltas-vazio">Carregando…</p>';
         try {
-            const r = await fetch(`/registros-falta?mes=${mesAtual()}`);
+            const r = await fetch('/registros-falta?all=1');
             const dados = await r.json();
             listaFaltas.innerHTML = '';
             if (!dados.length) {
-                listaFaltas.innerHTML = '<p class="faltas-vazio">Nenhuma falta registrada este mês.</p>';
+                listaFaltas.innerHTML = '<p class="faltas-vazio">Nenhuma falta registrada.</p>';
                 return;
             }
             dados.forEach(f => {
@@ -1421,6 +1427,7 @@ export function initModalNovaPasta(options = {}) {
         // Abre o modal de faltas
         cardFaltasWrapper.addEventListener('click', async () => {
             formAdicionarFalta.classList.add('hidden');
+            if (formExportarFaltas) formExportarFaltas.classList.add('hidden');
             btnAbrirFormFalta.classList.remove('hidden');
             modalFaltas.classList.remove('hidden');
             await carregarFaltas();
@@ -1434,6 +1441,68 @@ export function initModalNovaPasta(options = {}) {
         modalFaltas.addEventListener('click', (e) => {
             if (e.target === modalFaltas) modalFaltas.classList.add('hidden');
         });
+
+        // Botão Exportar: abre formulário de intervalo de datas
+        if (btnExportarFaltas) {
+            btnExportarFaltas.addEventListener('click', () => {
+                formAdicionarFalta.classList.add('hidden');
+                btnAbrirFormFalta.classList.remove('hidden');
+                // Pre-preenche com os extremos do mês atual
+                const hoje = new Date();
+                const primeiroDia = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-01`;
+                const ultimoDia  = new Date(hoje.getFullYear(), hoje.getMonth()+1, 0)
+                    .toISOString().split('T')[0];
+                if (inputExportInicio) inputExportInicio.value = primeiroDia;
+                if (inputExportFim)    inputExportFim.value    = ultimoDia;
+                formExportarFaltas.classList.toggle('hidden');
+            });
+        }
+
+        // Cancela exportação
+        if (btnCancelarExport) {
+            btnCancelarExport.addEventListener('click', () => {
+                formExportarFaltas.classList.add('hidden');
+            });
+        }
+
+        // Confirma exportação e gera .xlsx
+        if (btnConfirmarExport) {
+            btnConfirmarExport.addEventListener('click', async () => {
+                const inicio = inputExportInicio.value;
+                const fim    = inputExportFim.value;
+                if (!inicio || !fim) {
+                    alert('Selecione a data de início e a data de fim.');
+                    return;
+                }
+                if (inicio > fim) {
+                    alert('A data de início deve ser anterior à data de fim.');
+                    return;
+                }
+                try {
+                    const r = await fetch(`/registros-falta?inicio=${inicio}&fim=${fim}`);
+                    const dados = await r.json();
+                    if (!dados.length) {
+                        alert('Nenhuma falta encontrada nesse período.');
+                        return;
+                    }
+                    // Monta linhas da planilha
+                    const linhas = dados.map(f => ({
+                        Nome: f.funcionario_nome,
+                        Data: formatarData(f.tem_atestado ? f.atestado_inicio : f.data_falta)
+                    }));
+                    const wb = XLSX.utils.book_new();
+                    const ws = XLSX.utils.json_to_sheet(linhas);
+                    // Ajusta largura das colunas
+                    ws['!cols'] = [{ wch: 35 }, { wch: 14 }];
+                    XLSX.utils.book_append_sheet(wb, ws, 'Faltas');
+                    const nomeArquivo = `faltas_${inicio}_${fim}.xlsx`;
+                    XLSX.writeFile(wb, nomeArquivo);
+                    formExportarFaltas.classList.add('hidden');
+                } catch {
+                    alert('Erro ao exportar. Tente novamente.');
+                }
+            });
+        }
 
         // Exibe o formulário de adicionar falta
         if (btnAbrirFormFalta) {
