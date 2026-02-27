@@ -1503,15 +1503,46 @@ export function initModalNovaPasta(options = {}) {
                         alert('Nenhuma falta encontrada nesse período.');
                         return;
                     }
-                    // Monta linhas da planilha
-                    const linhas = dados.map(f => ({
-                        Nome: f.funcionario_nome,
-                        Data: formatarData(f.tem_atestado ? f.atestado_inicio : f.data_falta)
-                    }));
+                    // Agrupa os registros por pessoa
+                    const porPessoa = {};
+                    dados.forEach(f => {
+                        if (!porPessoa[f.funcionario_nome]) porPessoa[f.funcionario_nome] = [];
+                        porPessoa[f.funcionario_nome].push(f);
+                    });
+
+                    // Calcula a quantidade de dias de um registro
+                    const calcDias = f => {
+                        if (f.tem_atestado && f.atestado_inicio && f.atestado_fim) {
+                            const d1 = new Date(f.atestado_inicio + 'T00:00:00');
+                            const d2 = new Date(f.atestado_fim    + 'T00:00:00');
+                            return Math.round((d2 - d1) / 86400000) + 1;
+                        }
+                        return 1;
+                    };
+
+                    // Máximo de faltas que qualquer pessoa teve (define quantas colunas criar)
+                    const maxFaltas = Math.max(...Object.values(porPessoa).map(v => v.length));
+
+                    // Monta uma linha por pessoa, com colunas dinâmicas "Falta N - Data/Dias/Atestado"
+                    const linhas = Object.entries(porPessoa).map(([nome, faltas]) => {
+                        const row = { Nome: nome };
+                        faltas.forEach((f, i) => {
+                            const n = i + 1;
+                            row[`Falta ${n} - Data`]     = formatarData(f.tem_atestado ? f.atestado_inicio : f.data_falta);
+                            row[`Falta ${n} - Dias`]     = calcDias(f);
+                            row[`Falta ${n} - Atestado`] = f.tem_atestado ? 'Sim' : 'Não';
+                        });
+                        return row;
+                    });
+
+                    // Ajusta a largura das colunas (Nome + 3 colunas por falta)
+                    const colWidths = [{ wch: 35 }];
+                    for (let i = 0; i < maxFaltas; i++) {
+                        colWidths.push({ wch: 14 }, { wch: 7 }, { wch: 12 });
+                    }
                     const wb = XLSX.utils.book_new();
                     const ws = XLSX.utils.json_to_sheet(linhas);
-                    // Ajusta largura das colunas
-                    ws['!cols'] = [{ wch: 35 }, { wch: 14 }];
+                    ws['!cols'] = colWidths;
                     XLSX.utils.book_append_sheet(wb, ws, 'Faltas');
                     const nomeArquivo = `faltas_${inicio}_${fim}.xlsx`;
                     XLSX.writeFile(wb, nomeArquivo);
