@@ -551,8 +551,8 @@ export function initModalNovaPasta(options = {}) {
             .then(r => r.json())
             .then(arquivos => {
                 arquivos.forEach(arq => {
-                    // Monta a URL pública do arquivo a partir do nome salvo no disco
-                    const url = '/uploads/' + arq.nome_arquivo;
+                    // URL pode ser do Cloudinary (produção) ou local (dev)
+                    const url = arq.url_arquivo || '/uploads/' + arq.nome_arquivo;
                     renderizarCardArquivo(arq.id, arq.nome_original, url);
                 });
             })
@@ -925,7 +925,7 @@ export function initModalNovaPasta(options = {}) {
             .then(r => r.json())
             .then(arqs => {
                 arqs.forEach(arq =>
-                    renderizarCardArquivo(arq.id, arq.nome_original, '/uploads/' + arq.nome_arquivo)
+                    renderizarCardArquivo(arq.id, arq.nome_original, arq.url_arquivo || '/uploads/' + arq.nome_arquivo)
                 );
             })
             .catch(err => console.error('Erro ao carregar arquivos da subpasta:', err));
@@ -1025,7 +1025,7 @@ export function initModalNovaPasta(options = {}) {
         .then(inseridos => {
             // Para cada arquivo salvo, renderiza o card na lista
             inseridos.forEach(arq => {
-                renderizarCardArquivo(arq.id, arq.nome_original, '/uploads/' + arq.nome_arquivo);
+                renderizarCardArquivo(arq.id, arq.nome_original, arq.url_arquivo || '/uploads/' + arq.nome_arquivo);
             });
             marcarAlteracao();
         })

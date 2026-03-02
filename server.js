@@ -1,16 +1,35 @@
 ﻿require("dotenv").config();
 const { createClient } = require("@libsql/client");
+const cloudinaryLib = require("cloudinary");
 const http    = require("http");
 const path    = require("path");
 const fs      = require("fs");
 const express = require("express");
 const multer  = require("multer");
 
+// ── Cloudinary (produção) vs Disco (desenvolvimento) ──────────────────────────
+const USE_CLOUDINARY = !!(
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY    &&
+  process.env.CLOUDINARY_API_SECRET
+);
+
+let cloudinary;
+if (USE_CLOUDINARY) {
+  cloudinary = cloudinaryLib.v2;
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key:    process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+  console.log("Cloudinary configurado para armazenamento remoto");
+}
+
 // ── Caminhos de dados ────────────────────────────────────────────────────────
 const MIDIA_DIR   = path.join(__dirname, "public", "midia");
 const UPLOADS_DIR = process.env.UPLOADS_DIR || path.join(MIDIA_DIR, "uploads");
 
-// Garante que uploads existem localmente
+// Garante que pasta local existe (usado apenas em dev)
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 // ── Banco de dados (Turso em producao / SQLite local em dev) ──────────────────
@@ -86,6 +105,7 @@ async function inicializarDB() {
     "ALTER TABLE pastas   ADD COLUMN data_nascimento TEXT    DEFAULT ''",
     "ALTER TABLE pastas   ADD COLUMN faltas          INTEGER DEFAULT 0",
     "ALTER TABLE arquivos ADD COLUMN subpasta_id     INTEGER DEFAULT NULL",
+    "ALTER TABLE arquivos ADD COLUMN url_arquivo     TEXT    DEFAULT ''",
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch (_) { /* coluna ja existe */ }
@@ -94,15 +114,53 @@ async function inicializarDB() {
 }
 
 // ── Configuracao do Multer ──────────────────────────────────────────────────
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
-  filename: (_req, file, cb) => {
-    const ext    = path.extname(file.originalname);
-    const unique = Date.now() + "_" + Math.round(Math.random() * 1e6);
-    cb(null, unique + ext);
-  }
-});
+const storage = USE_CLOUDINARY
+  ? multer.memoryStorage()
+  : multer.diskStorage({
+      destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
+      filename: (_req, file, cb) => {
+        const ext    = path.extname(file.originalname);
+        const unique = Date.now() + "_" + Math.round(Math.random() * 1e6);
+        cb(null, unique + ext);
+      }
+    });
 const upload = multer({ storage });
+
+// ── Helpers de armazenamento ──────────────────────────────────────────────────
+// Salva um arquivo (disco em dev / Cloudinary em producao)
+// Retorna { public_id, url }
+async function salvarArquivo(file) {
+  if (USE_CLOUDINARY) {
+    return new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        {
+          folder:        "gerenciador-pastas",
+          resource_type: "raw",
+          public_id:     Date.now() + "_" + Math.round(Math.random() * 1e6) + "_" + path.basename(file.originalname, path.extname(file.originalname)),
+          use_filename:  false,
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve({ public_id: result.public_id, url: result.secure_url });
+        }
+      ).end(file.buffer);
+    });
+  } else {
+    // Disco local: multer já salvou o arquivo
+    return { public_id: file.filename, url: "/uploads/" + file.filename };
+  }
+}
+
+// Exclui um arquivo (disco em dev / Cloudinary em producao)
+async function excluirArquivo(public_id) {
+  if (!public_id) return;
+  if (USE_CLOUDINARY) {
+    try { await cloudinary.uploader.destroy(public_id, { resource_type: "raw" }); } catch (_) {}
+  } else {
+    const fp = path.join(UPLOADS_DIR, public_id);
+    if (fs.existsSync(fp)) fs.unlinkSync(fp);
+  }
+}
 
 // ── Express ───────────────────────────────────────────────────────────────────
 const app  = express();
@@ -250,7 +308,7 @@ app.delete("/pastas/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const r = await db.execute({ sql: "SELECT nome_arquivo FROM arquivos WHERE pasta_id = ?", args: [id] });
-    r.rows.forEach(row => { const fp = path.join(UPLOADS_DIR, row.nome_arquivo); if (fs.existsSync(fp)) fs.unlinkSync(fp); });
+    await Promise.all(r.rows.map(row => excluirArquivo(row.nome_arquivo)));
     await db.batch([
       { sql: "DELETE FROM arquivos        WHERE pasta_id = ?", args: [id] },
       { sql: "DELETE FROM subpastas       WHERE pasta_id = ?", args: [id] },
@@ -295,8 +353,9 @@ app.post("/pastas/:id/arquivos", upload.array("arquivos"), async (req, res) => {
     const files   = req.files;
     if (!files || files.length === 0) return res.status(400).json({ error: "Nenhum arquivo enviado" });
     const inseridos = await Promise.all(files.map(async (file) => {
-      const ins = await db.execute({ sql: "INSERT INTO arquivos (pasta_id, nome_original, nome_arquivo, mimetype, tamanho) VALUES (?, ?, ?, ?, ?)", args: [pastaId, file.originalname, file.filename, file.mimetype, file.size] });
-      return { id: Number(ins.lastInsertRowid), pasta_id: Number(pastaId), nome_original: file.originalname, nome_arquivo: file.filename, mimetype: file.mimetype, tamanho: file.size, url: "/uploads/" + file.filename };
+      const { public_id, url } = await salvarArquivo(file);
+      const ins = await db.execute({ sql: "INSERT INTO arquivos (pasta_id, nome_original, nome_arquivo, mimetype, tamanho, url_arquivo) VALUES (?, ?, ?, ?, ?, ?)", args: [pastaId, file.originalname, public_id, file.mimetype, file.size, url] });
+      return { id: Number(ins.lastInsertRowid), pasta_id: Number(pastaId), nome_original: file.originalname, nome_arquivo: public_id, mimetype: file.mimetype, tamanho: file.size, url };
     }));
     res.status(201).json(inseridos);
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -307,8 +366,7 @@ app.delete("/pastas/:id/arquivos/:arquivoId", async (req, res) => {
     const { arquivoId } = req.params;
     const r = await db.execute({ sql: "SELECT nome_arquivo FROM arquivos WHERE id = ?", args: [arquivoId] });
     if (!r.rows[0]) return res.status(404).json({ error: "Arquivo nao encontrado" });
-    const filePath = path.join(UPLOADS_DIR, r.rows[0].nome_arquivo);
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    await excluirArquivo(r.rows[0].nome_arquivo);
     await db.execute({ sql: "DELETE FROM arquivos WHERE id = ?", args: [arquivoId] });
     res.json({ ok: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -335,7 +393,7 @@ app.delete("/pastas/:id/subpastas/:subId", async (req, res) => {
   try {
     const { subId } = req.params;
     const r = await db.execute({ sql: "SELECT nome_arquivo FROM arquivos WHERE subpasta_id = ?", args: [subId] });
-    r.rows.forEach(row => { const fp = path.join(UPLOADS_DIR, row.nome_arquivo); if (fs.existsSync(fp)) fs.unlinkSync(fp); });
+    await Promise.all(r.rows.map(row => excluirArquivo(row.nome_arquivo)));
     await db.batch([
       { sql: "DELETE FROM arquivos  WHERE subpasta_id = ?", args: [subId] },
       { sql: "DELETE FROM subpastas WHERE id = ?",          args: [subId] },
@@ -370,8 +428,9 @@ app.post("/subpastas/:id/arquivos", upload.array("arquivos"), async (req, res) =
     if (!subR.rows[0]) return res.status(404).json({ error: "Subpasta nao encontrada" });
     const pastaId = subR.rows[0].pasta_id;
     const inseridos = await Promise.all(files.map(async (file) => {
-      const ins = await db.execute({ sql: "INSERT INTO arquivos (pasta_id, subpasta_id, nome_original, nome_arquivo, mimetype, tamanho) VALUES (?, ?, ?, ?, ?, ?)", args: [pastaId, subpastaId, file.originalname, file.filename, file.mimetype, file.size] });
-      return { id: Number(ins.lastInsertRowid), pasta_id: pastaId, subpasta_id: Number(subpastaId), nome_original: file.originalname, nome_arquivo: file.filename, mimetype: file.mimetype, tamanho: file.size, url: "/uploads/" + file.filename };
+      const { public_id, url } = await salvarArquivo(file);
+      const ins = await db.execute({ sql: "INSERT INTO arquivos (pasta_id, subpasta_id, nome_original, nome_arquivo, mimetype, tamanho, url_arquivo) VALUES (?, ?, ?, ?, ?, ?, ?)", args: [pastaId, subpastaId, file.originalname, public_id, file.mimetype, file.size, url] });
+      return { id: Number(ins.lastInsertRowid), pasta_id: pastaId, subpasta_id: Number(subpastaId), nome_original: file.originalname, nome_arquivo: public_id, mimetype: file.mimetype, tamanho: file.size, url };
     }));
     res.status(201).json(inseridos);
   } catch (err) { res.status(500).json({ error: err.message }); }

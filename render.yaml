@@ -12,3 +12,11 @@ services:
         value: libsql://up-consult-gerenciador-de-pastas-jota-jota07.aws-us-west-2.turso.io
       - key: TURSO_TOKEN
         sync: false   # valor secreto — definir manualmente no painel do Render
+
+      # Cloudinary (uploads persistentes — nao se perdem em deploys)
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false   # definir manualmente no painel do Render
+      - key: CLOUDINARY_API_KEY
+        sync: false   # definir manualmente no painel do Render
+      - key: CLOUDINARY_API_SECRET
+        sync: false   # definir manualmente no painel do Render
