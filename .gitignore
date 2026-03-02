@@ -1,12 +1,16 @@
 # Dependências
 node_modules/
 
-# Banco de dados local — NÃO commitar; em produção o arquivo fica no Persistent Disk do Render
+# Banco de dados e uploads — ficam em public/midia/ localmente, NÃO commitar
+public/midia/db.sqlite
+public/midia/db.sqlite-shm
+public/midia/db.sqlite-wal
+public/midia/uploads/
+
+# Compatível com caminhos antigos (caso existam)
 db.sqlite
 db.sqlite-shm
 db.sqlite-wal
-
-# Arquivos enviados pelos usuários — NÃO commitar; em produção ficam no Persistent Disk
 uploads/
 
 # Logs

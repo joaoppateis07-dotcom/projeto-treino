@@ -5,15 +5,10 @@ services:
     buildCommand: npm install
     startCommand: npm start
 
-    # Disco persistente: sobrevive a deploys e reinícios.
-    # Os dados ficam em /var/data e são mantidos entre deployments.
-    disk:
-      name: dados-persistentes
-      mountPath: /var/data
-      sizeGB: 1
-
+    # Banco de dados: Turso (cloud) — persiste entre deploys sem disco
+    # TURSO_TOKEN deve ser configurado como variável secreta no painel do Render
     envVars:
-      - key: DB_PATH
-        value: /var/data/db.sqlite
-      - key: UPLOADS_DIR
-        value: /var/data/uploads
+      - key: TURSO_URL
+        value: libsql://up-consult-gerenciador-de-pastas-jota-jota07.aws-us-west-2.turso.io
+      - key: TURSO_TOKEN
+        sync: false   # valor secreto — definir manualmente no painel do Render
