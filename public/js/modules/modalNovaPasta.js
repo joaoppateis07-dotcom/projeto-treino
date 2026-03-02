@@ -218,6 +218,44 @@ export function initModalNovaPasta(options = {}) {
     if (editCpf) editCpf.addEventListener('input', onCpfInput);
 
     // ──────────────────────────────────────────────────────────────
+    // FUNÇÃO: atualizarFaltasMesPasta
+    // Atualiza o contador "Faltas no mês" no cabeçalho da pasta aberta.
+    // Pode ser chamada tanto na abertura do modal quanto após salvar/excluir faltas.
+    // ──────────────────────────────────────────────────────────────
+    function atualizarFaltasMesPasta(pastaId, el) {
+        if (!el || !pastaId) return;
+        el.textContent = '';
+        el.className = '';
+        const mesRef = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; })();
+        fetch(`/registros-falta?mes=${mesRef}&pasta_id=${pastaId}`)
+            .then(r => r.json())
+            .then(lista => {
+                const [ano, mes] = mesRef.split('-').map(Number);
+                const primeiroDiaMes = new Date(ano, mes - 1, 1);
+                const ultimoDiaMes   = new Date(ano, mes, 0);
+                const diasNoMes = (inicio, fim) => {
+                    const d1 = new Date(Math.max(new Date(inicio + 'T00:00:00'), primeiroDiaMes));
+                    const d2 = new Date(Math.min(new Date(fim   + 'T00:00:00'), ultimoDiaMes));
+                    return d2 < d1 ? 0 : Math.round((d2 - d1) / 86400000) + 1;
+                };
+                const totalDias = lista.reduce((acc, f) => {
+                    if (f.tem_atestado && f.atestado_inicio && f.atestado_fim) {
+                        return acc + diasNoMes(f.atestado_inicio, f.atestado_fim);
+                    }
+                    return acc + 1;
+                }, 0);
+                const label = totalDias === 1 ? 'dia' : 'dias';
+                if (totalDias === 0) {
+                    el.textContent = 'Faltas no mês: 0 dias';
+                } else {
+                    el.textContent = `Faltas no mês: ${totalDias} ${label}`;
+                    el.classList.add('info-faltas-alerta');
+                }
+            })
+            .catch(() => { el.textContent = ''; });
+    }
+
+    // ──────────────────────────────────────────────────────────────
     // FUNÇÃO: abrirModalPasta
     // Preenche o cabeçalho do modal com os dados da pasta clicada
     // e exibe o modal de upload/detalhes
@@ -237,36 +275,7 @@ export function initModalNovaPasta(options = {}) {
             // Busca o total de DIAS de falta do funcionário no mês atual e exibe no cabeçalho
             const uploadInfoFaltasMes = document.getElementById('uploadInfoFaltasMes');
             if (uploadInfoFaltasMes) {
-                uploadInfoFaltasMes.textContent = '';
-                uploadInfoFaltasMes.className = '';
-                const mesRef = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; })();
-                fetch(`/registros-falta?mes=${mesRef}&pasta_id=${dados.id}`)
-                    .then(r => r.json())
-                    .then(lista => {
-                        // Calcula o total de dias (atestado pode cobrir vários dias)
-                        const [ano, mes] = mesRef.split('-').map(Number);
-                        const primeiroDiaMes = new Date(ano, mes - 1, 1);
-                        const ultimoDiaMes   = new Date(ano, mes, 0);
-                        const diasNoMes = (inicio, fim) => {
-                            const d1 = new Date(Math.max(new Date(inicio + 'T00:00:00'), primeiroDiaMes));
-                            const d2 = new Date(Math.min(new Date(fim   + 'T00:00:00'), ultimoDiaMes));
-                            return d2 < d1 ? 0 : Math.round((d2 - d1) / 86400000) + 1;
-                        };
-                        const totalDias = lista.reduce((acc, f) => {
-                            if (f.tem_atestado && f.atestado_inicio && f.atestado_fim) {
-                                return acc + diasNoMes(f.atestado_inicio, f.atestado_fim);
-                            }
-                            return acc + 1;
-                        }, 0);
-                        const label = totalDias === 1 ? 'dia' : 'dias';
-                        if (totalDias === 0) {
-                            uploadInfoFaltasMes.textContent = 'Faltas no mês: 0 dias';
-                        } else {
-                            uploadInfoFaltasMes.textContent = `Faltas no mês: ${totalDias} ${label}`;
-                            uploadInfoFaltasMes.classList.add('info-faltas-alerta');
-                        }
-                    })
-                    .catch(() => { uploadInfoFaltasMes.textContent = ''; });
+                atualizarFaltasMesPasta(dados.id, uploadInfoFaltasMes);
             }
         } else {
             if (uploadInfoCpf) uploadInfoCpf.textContent = 'CPF: ' + mascaraCpf(dados.cpf);
@@ -1410,6 +1419,9 @@ export function initModalNovaPasta(options = {}) {
                     await fetch(`/registros-falta/${f.id}`, { method: 'DELETE' });
                     await carregarFaltas();
                     atualizarStats();
+                    // Atualiza o contador de faltas na pasta que estiver aberta
+                    const elFaltasMes = document.getElementById('uploadInfoFaltasMes');
+                    if (pastaSelecionada && elFaltasMes) atualizarFaltasMesPasta(pastaSelecionada.id, elFaltasMes);
                 });
 
                 listaFaltas.appendChild(item);
@@ -1525,7 +1537,13 @@ export function initModalNovaPasta(options = {}) {
 
                     // Monta uma linha por pessoa, com colunas dinâmicas "Falta N - Data/Dias/Atestado"
                     const linhas = Object.entries(porPessoa).map(([nome, faltas]) => {
-                        const row = { Nome: nome };
+                        const totalDias = faltas.reduce((acc, f) => acc + calcDias(f), 0);
+                        const row = {
+                            Nome:            nome,
+                            Setor:           faltas[0]?.funcionario_setor || '',
+                            Cargo:           faltas[0]?.funcionario_cargo || '',
+                            'Total de Dias': totalDias,
+                        };
                         faltas.forEach((f, i) => {
                             const n = i + 1;
                             row[`Falta ${n} - Data`]     = formatarData(f.tem_atestado ? f.atestado_inicio : f.data_falta);
@@ -1535,8 +1553,8 @@ export function initModalNovaPasta(options = {}) {
                         return row;
                     });
 
-                    // Ajusta a largura das colunas (Nome + 3 colunas por falta)
-                    const colWidths = [{ wch: 35 }];
+                    // Ajusta a largura das colunas (Nome + Setor + Cargo + Total + 3 colunas por falta)
+                    const colWidths = [{ wch: 35 }, { wch: 20 }, { wch: 20 }, { wch: 13 }];
                     for (let i = 0; i < maxFaltas; i++) {
                         colWidths.push({ wch: 14 }, { wch: 7 }, { wch: 12 });
                     }
@@ -1627,6 +1645,9 @@ export function initModalNovaPasta(options = {}) {
                     btnAbrirFormFalta.classList.remove('hidden');
                     await carregarFaltas();
                     atualizarStats();
+                    // Atualiza o contador de faltas na pasta que estiver aberta
+                    const elFaltasMes = document.getElementById('uploadInfoFaltasMes');
+                    if (pastaSelecionada && elFaltasMes) atualizarFaltasMesPasta(pastaSelecionada.id, elFaltasMes);
                 } catch {
                     alert('Erro ao salvar falta. Tente novamente.');
                 }

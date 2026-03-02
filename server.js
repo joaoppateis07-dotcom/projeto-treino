@@ -254,7 +254,7 @@ app.get("/registros-falta", async (req, res) => {
     }
     if (pasta_id) { whereClauses.push("rf.pasta_id = ?"); args.push(pasta_id); }
     const where = whereClauses.length ? "WHERE " + whereClauses.join(" AND ") : "";
-    const r = await db.execute({ sql: `SELECT rf.id, rf.pasta_id, rf.data_falta, rf.tem_atestado, rf.atestado_inicio, rf.atestado_fim, rf.criado_em, p.nome AS funcionario_nome FROM registros_falta rf JOIN pastas p ON p.id = rf.pasta_id ${where} ORDER BY rf.data_falta DESC, p.nome`, args });
+    const r = await db.execute({ sql: `SELECT rf.id, rf.pasta_id, rf.data_falta, rf.tem_atestado, rf.atestado_inicio, rf.atestado_fim, rf.criado_em, p.nome AS funcionario_nome, p.setor AS funcionario_setor, p.cargo AS funcionario_cargo FROM registros_falta rf JOIN pastas p ON p.id = rf.pasta_id ${where} ORDER BY rf.data_falta DESC, p.nome`, args });
     res.json(r.rows);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
