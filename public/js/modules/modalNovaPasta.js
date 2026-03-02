@@ -449,6 +449,8 @@ export function initModalNovaPasta(options = {}) {
             // Fecha o formulário de edição após salvar com sucesso
             editFormUpload.classList.add('hidden');
             marcarAlteracao();
+            // Atualiza os cards de resumo (ex: contador de aniversários pode ter mudado)
+            atualizarStats();
         })
         .catch(err => {
             console.error('Erro ao editar pasta:', err);
