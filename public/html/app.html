@@ -21,11 +21,8 @@
         <h1 id="tituloRhDocumentos">RH Documentos</h1>
         <p id="sistemaDeGestaoDeDocumentos">Sistema de Gestão de Documentos</p>
       </div>
-      <!-- Botões da topbar -->
-      <div class="topbar-actions">
-        <button id="btnExportarPastas" class="btn btn-export">&#128196; Exportar</button>
-        <button id="btnNovaPasta" class="btn">+ NOVA PASTA</button>
-      </div>
+      <!-- Botão que abre o modal de criação de nova pasta -->
+      <button id="btnNovaPasta" class="btn">+ NOVA PASTA</button>
     </div>
     <!-- Botões de navegação: voltar à seleção de módulo ou ao login -->
     <div class="topbar-nav">
@@ -213,7 +210,10 @@
         <!-- Cabeçalho da seção: título e botão para criar nova subpasta -->
         <div id="subpastasHeader">
           <span id="subpastasTitulo">📂 Subpastas</span>
-          <button id="btnNovaSubpasta" class="btn btn-sm">Criar pasta</button>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button id="btnExportarPasta" class="btn btn-sm btn-export-pasta" title="Baixar todos os arquivos desta pasta como ZIP">&#128229; Exportar</button>
+            <button id="btnNovaSubpasta" class="btn btn-sm">Criar pasta</button>
+          </div>
         </div>
 
         <!-- Formulário inline para digitar o nome da nova subpasta (oculto por padrão) -->
@@ -252,7 +252,6 @@
       <!-- Rodapé: Upload+ adiciona arquivos, Concluído fecha o modal -->
       <div id="uploadFooter">
         <button id="btnUploadMais" class="btn">Upload+</button>
-        <button id="btnExportarPasta" class="btn btn-export-pasta" title="Baixar todos os arquivos desta pasta como ZIP">&#128229; Exportar</button>
         <div id="footerAcoes">
           <!-- Confirmação inline exibida quando o usuário clica em Descartar -->
           <div id="confirmDescarte" class="hidden">
