@@ -1215,9 +1215,9 @@ export function initModalNovaPasta(options = {}) {
             // Adiciona a nova pasta no array local com o ID gerado pelo banco
             pastas.push(data);
 
-            // Cria e insere o card visual na lista de pastas da tela
+            // Cria e insere o card visual na lista de pastas na posição alfabética correta
             const novaPasta = criarCardPasta(data);
-            listaPastas.appendChild(novaPasta);
+            inserirCardOrdenado(novaPasta, data.nome);
 
             // Limpa os campos do formulário para uma próxima criação
             NomePasta.value = '';
@@ -1309,6 +1309,28 @@ export function initModalNovaPasta(options = {}) {
         });
 
         return el;
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // FUNÇÃO: inserirCardOrdenado
+    // Insere um card na listaPastas na posição alfabética correta
+    // pelo nome, para manter a lista sempre ordenada A → Z.
+    // ──────────────────────────────────────────────────────────────
+    function inserirCardOrdenado(card, nome) {
+        const cards = Array.from(listaPastas.querySelectorAll('.pasta'));
+        const nomeNorm = (nome || '').toLowerCase();
+
+        // Encontra o primeiro card cujo nome vem depois do novo
+        const referencia = cards.find(c => {
+            const d = pastas.find(p => p.id == c.dataset.id);
+            return d && (d.nome || '').toLowerCase() > nomeNorm;
+        });
+
+        if (referencia) {
+            listaPastas.insertBefore(card, referencia);
+        } else {
+            listaPastas.appendChild(card);
+        }
     }
 
     // ──────────────────────────────────────────────────────────────

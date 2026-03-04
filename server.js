@@ -292,7 +292,7 @@ app.delete("/registros-falta/:id", async (req, res) => {
 app.get("/pastas", async (req, res) => {
   try {
     const modulo = req.query.modulo || "RH";
-    const r = await db.execute({ sql: "SELECT * FROM pastas WHERE modulo = ? ORDER BY id DESC", args: [modulo] });
+    const r = await db.execute({ sql: "SELECT * FROM pastas WHERE modulo = ? ORDER BY nome ASC", args: [modulo] });
     res.json(r.rows);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
