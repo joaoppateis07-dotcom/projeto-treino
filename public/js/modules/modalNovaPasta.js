@@ -40,18 +40,18 @@ export function initModalNovaPasta(options = {}) {
     // Botão "CRIAR" – confirma a criação da pasta
     const btnCriarPasta    = document.getElementById('btnCriarPasta');
     // Campo de texto para o nome do funcionário (nome da pasta)
-    const NomePasta        = document.getElementById('inputNomePasta');
+    const inputNomePasta        = document.getElementById('inputNomePasta');
     // Campo de texto para o CPF do funcionário
-    const CpfFFuncionario  = document.getElementById('inputCpfFFuncionario');
+    const inputCpfFuncionario  = document.getElementById('inputCpfFFuncionario');
     // Selects comerciais
-    const Captacao         = document.getElementById('selectCaptacao');
-    const Parceiro        = document.getElementById('selectParceiro');
+    const selectCaptacao         = document.getElementById('selectCaptacao');
+    const selectParceiro        = document.getElementById('selectParceiro');
     // Select para o cargo do funcionário (RH)
-    const Cargo            = document.getElementById('selectCargo');
+    const selectCargo            = document.getElementById('selectCargo');
     // Select para o setor do funcionário (RH)
-    const Setor            = document.getElementById('selectSetor');
+    const selectSetor            = document.getElementById('selectSetor');
     // Campos RH: data de nascimento
-    const DataNascimento   = document.getElementById('inputDataNascimento');
+    const inputDataNascimento   = document.getElementById('inputDataNascimento');
     // Container onde os cards das pastas criadas serão exibidos na tela
     const listaPastas      = document.getElementById('listaPastas');
 
@@ -71,7 +71,6 @@ export function initModalNovaPasta(options = {}) {
         btnLimparPesquisa.classList.toggle('hidden', termo === '');
 
         let visiveis = 0;
-        const totalCards = document.querySelectorAll('#listaPastas .pasta').length;
 
         document.querySelectorAll('#listaPastas .pasta').forEach(card => {
             const pasta = pastas.find(p => p.id == card.dataset.id);
@@ -263,7 +262,7 @@ export function initModalNovaPasta(options = {}) {
         e.target.setSelectionRange(inicio + diff, inicio + diff);
     }
 
-    if (CpfFFuncionario) CpfFFuncionario.addEventListener('input', onCpfInput);
+    if (inputCpfFuncionario) inputCpfFuncionario.addEventListener('input', onCpfInput);
     if (editCpf) editCpf.addEventListener('input', onCpfInput);
 
     // ──────────────────────────────────────────────────────────────
@@ -412,7 +411,7 @@ export function initModalNovaPasta(options = {}) {
     // ──────────────────────────────────────────────────────────────
     btnSalvarEdicao.addEventListener('click', () => {
         // Validação: nenhum campo pode estar vazio ou sem seleção
-        if (editNome.value.trim() === '')  { alert('Preencha o nome');       return; }
+        if (editNome.value.trim() === '')  { mostrarAviso('Preencha o nome', 'aviso');       return; }
         
         let cpf = '';
         let cargo = '';
@@ -422,17 +421,17 @@ export function initModalNovaPasta(options = {}) {
         let data_nascimento = '';
 
         if (!isComercial) {
-            if (editCpf.value.replace(/\D/g,'').length < 11) { alert('Preencha o CPF completo (000.000.000-00)'); return; }
-            if (editCargo.value === '__')      { alert('Selecione um cargo');     return; }
-            if (editSetor.value === '__')      { alert('Selecione um setor');     return; }
+            if (editCpf.value.replace(/\D/g,'').length < 11) { mostrarAviso('Preencha o CPF completo (000.000.000-00)', 'aviso'); return; }
+            if (editCargo.value === '__')      { mostrarAviso('Selecione um cargo', 'aviso');     return; }
+            if (editSetor.value === '__')      { mostrarAviso('Selecione um setor', 'aviso');     return; }
             cpf = editCpf.value.trim();
             cargo = editCargo.value;
             setor = editSetor.value;
             data_nascimento = editDataNascimento ? editDataNascimento.value : '';
         } else {
-            if (editCpf && editCpf.value.replace(/\D/g,'').length < 11) { alert('Preencha o CPF completo (000.000.000-00)'); return; }
-            if (editCaptacao && editCaptacao.value === '__') { alert('Selecione a forma de captação'); return; }
-            if (editParceiro && editParceiro.value === '__') { alert('Selecione o parceiro'); return; }
+            if (editCpf && editCpf.value.replace(/\D/g,'').length < 11) { mostrarAviso('Preencha o CPF completo (000.000.000-00)', 'aviso'); return; }
+            if (editCaptacao && editCaptacao.value === '__') { mostrarAviso('Selecione a forma de captação', 'aviso'); return; }
+            if (editParceiro && editParceiro.value === '__') { mostrarAviso('Selecione o parceiro', 'aviso'); return; }
             cpf = editCpf ? editCpf.value.trim() : '';
             captacao = editCaptacao ? editCaptacao.value : '';
             parceiro = editParceiro ? editParceiro.value : '';
@@ -503,7 +502,7 @@ export function initModalNovaPasta(options = {}) {
         })
         .catch(err => {
             console.error('Erro ao editar pasta:', err);
-            alert('Erro ao salvar. Tente novamente.');
+            mostrarAviso('Erro ao salvar. Tente novamente.', 'erro');
         });
     });
 
@@ -553,6 +552,28 @@ export function initModalNovaPasta(options = {}) {
             btnDesfazer.removeEventListener('click', novoDesfazer);
             onConfirmar();
         }, duracao);
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // FUNÇÃO: mostrarAviso
+    // Exibe um popup de notificação no fundo da tela substituindo alert().
+    // Parâmetros:
+    //  - mensagem: texto a exibir
+    //  - tipo    : 'aviso' (amarelo) | 'erro' (vermelho) | 'sucesso' (verde)
+    //              padrão: 'aviso'
+    // Auto-fecha após 3,5 s. Uma chamada cancela o timer anterior.
+    // ──────────────────────────────────────────────────────────────
+    let _avisoTimer = null;
+
+    function mostrarAviso(mensagem, tipo = 'aviso') {
+        const el = document.getElementById('popupAviso');
+        if (!el) return;
+        el.textContent = mensagem;
+        el.className = `popup-aviso popup-aviso--${tipo}`;
+        clearTimeout(_avisoTimer);
+        _avisoTimer = setTimeout(() => {
+            el.classList.add('popup-aviso--oculto');
+        }, 3500);
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -714,8 +735,8 @@ export function initModalNovaPasta(options = {}) {
 
         item.appendChild(excluir);
 
-        // Clicar em qualquer parte do card também abre o arquivo
-        item.addEventListener('click', () => window.open(url, '_blank'));
+        // Clicar em qualquer parte do card abre o preview inline
+        item.addEventListener('click', () => abrirPreview(url, nomeOriginal));
 
         // ── Arrastar este arquivo para dentro de uma subpasta ──────────────
         // O ID do arquivo é passado via dataTransfer para a zona de drop da subpasta
@@ -729,6 +750,53 @@ export function initModalNovaPasta(options = {}) {
 
         listaArquivos.appendChild(item);
         verificarTextoVazio(); // Esconde o texto instrucional assim que um item é adicionado
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // FUNÇÃO: abrirPreview
+    // Abre o modal de pré-visualização de arquivo.
+    // Suporte: imagens (jpg/png/gif/webp/svg), PDF (iframe),
+    //          vídeos (mp4/webm), e fallback para outros formatos.
+    // ──────────────────────────────────────────────────────────────
+    function abrirPreview(url, nome) {
+        const modal     = document.getElementById('modalPreview');
+        const conteudo  = document.getElementById('modalPreviewConteudo');
+        const nomeEl    = document.getElementById('modalPreviewNome');
+        const btnAbrir  = document.getElementById('modalPreviewAbrir');
+        if (!modal) return;
+
+        nomeEl.textContent = nome;
+        conteudo.innerHTML = '';
+        btnAbrir.onclick   = () => window.open(url, '_blank');
+
+        const ext = nome.split('.').pop().toLowerCase();
+
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)) {
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = nome;
+            img.classList.add('preview-imagem');
+            conteudo.appendChild(img);
+        } else if (ext === 'pdf') {
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.classList.add('preview-iframe');
+            iframe.title = nome;
+            conteudo.appendChild(iframe);
+        } else if (['mp4', 'webm', 'ogg'].includes(ext)) {
+            const video = document.createElement('video');
+            video.src = url;
+            video.controls = true;
+            video.classList.add('preview-video');
+            conteudo.appendChild(video);
+        } else {
+            const msg = document.createElement('div');
+            msg.classList.add('preview-sem-suporte');
+            msg.innerHTML = '<p>Pré-visualização não disponível para este tipo de arquivo.</p>';
+            conteudo.appendChild(msg);
+        }
+
+        modal.classList.remove('hidden');
     }
 
     // ──────────────────────────────────────────────────────────────
@@ -1029,7 +1097,7 @@ export function initModalNovaPasta(options = {}) {
     // Confirma a criação da subpasta via POST no servidor
     btnCriarSubpasta.addEventListener('click', () => {
         const nome = inputNomeSubpasta.value.trim();
-        if (!nome) { alert('Digite o nome da subpasta'); return; }
+        if (!nome) { mostrarAviso('Digite o nome da subpasta', 'aviso'); return; }
 
         fetch('/pastas/' + pastaSelecionada.id + '/subpastas', {
             method: 'POST',
@@ -1045,7 +1113,7 @@ export function initModalNovaPasta(options = {}) {
         })
         .catch(err => {
             console.error('Erro ao criar subpasta:', err);
-            alert('Erro ao criar subpasta.');
+            mostrarAviso('Erro ao criar subpasta.', 'erro');
         });
     });
 
@@ -1091,7 +1159,7 @@ export function initModalNovaPasta(options = {}) {
         })
         .catch(err => {
             console.error('Erro ao fazer upload:', err);
-            alert('Erro ao enviar arquivo: ' + err.message);
+            mostrarAviso('Erro ao enviar arquivo: ' + err.message, 'erro');
         });
 
         // Limpa o input para permitir selecionar o mesmo arquivo novamente
@@ -1120,7 +1188,7 @@ export function initModalNovaPasta(options = {}) {
                 });
                 marcarAlteracao();
             })
-            .catch(err => { console.error('Erro ao colar:', err); alert('Erro ao colar arquivo: ' + err.message); });
+            .catch(err => { console.error('Erro ao colar:', err); mostrarAviso('Erro ao colar arquivo: ' + err.message, 'erro'); });
     });
 
     function mostrarToastPaste(qtd) {
@@ -1184,7 +1252,7 @@ export function initModalNovaPasta(options = {}) {
     // ──────────────────────────────────────────────────────────────
     btnCriarPasta.addEventListener('click', () => {
         // Validação: todos os campos são obrigatórios
-        if (NomePasta.value.trim() === '')      { alert('Preencha o nome da pasta');       return; }
+        if (inputNomePasta.value.trim() === '')      { mostrarAviso('Preencha o nome da pasta', 'aviso');       return; }
         
         let cpf = '';
         let cargo = '';
@@ -1194,24 +1262,24 @@ export function initModalNovaPasta(options = {}) {
         let data_nascimento = '';
 
         if (!isComercial) {
-            if (CpfFFuncionario.value.replace(/\D/g,'').length < 11) { alert('Preencha o CPF completo (000.000.000-00)'); return; }
-            if (Cargo.value === '__')               { alert('Selecione um cargo');             return; }
-            if (Setor.value === '__')               { alert('Selecione um setor');             return; }
-            cpf = CpfFFuncionario.value.trim();
-            cargo = Cargo.value;
-            setor = Setor.value;
-            data_nascimento = DataNascimento ? DataNascimento.value : '';
+            if (inputCpfFuncionario.value.replace(/\D/g,'').length < 11) { mostrarAviso('Preencha o CPF completo (000.000.000-00)', 'aviso'); return; }
+            if (selectCargo.value === '__')               { mostrarAviso('Selecione um cargo', 'aviso');             return; }
+            if (selectSetor.value === '__')               { mostrarAviso('Selecione um setor', 'aviso');             return; }
+            cpf = inputCpfFuncionario.value.trim();
+            cargo = selectCargo.value;
+            setor = selectSetor.value;
+            data_nascimento = inputDataNascimento ? inputDataNascimento.value : '';
         } else {
-            if (CpfFFuncionario && CpfFFuncionario.value.replace(/\D/g,'').length < 11) { alert('Preencha o CPF completo (000.000.000-00)'); return; }
-            if (Captacao && Captacao.value === '__') { alert('Selecione a forma de captação'); return; }
-            if (Parceiro && Parceiro.value === '__') { alert('Selecione o parceiro'); return; }
-            cpf = CpfFFuncionario ? CpfFFuncionario.value.trim() : '';
-            captacao = Captacao ? Captacao.value : '';
-            parceiro = Parceiro ? Parceiro.value : '';
+            if (inputCpfFuncionario && inputCpfFuncionario.value.replace(/\D/g,'').length < 11) { mostrarAviso('Preencha o CPF completo (000.000.000-00)', 'aviso'); return; }
+            if (selectCaptacao && selectCaptacao.value === '__') { mostrarAviso('Selecione a forma de captação', 'aviso'); return; }
+            if (selectParceiro && selectParceiro.value === '__') { mostrarAviso('Selecione o parceiro', 'aviso'); return; }
+            cpf = inputCpfFuncionario ? inputCpfFuncionario.value.trim() : '';
+            captacao = selectCaptacao ? selectCaptacao.value : '';
+            parceiro = selectParceiro ? selectParceiro.value : '';
         }
 
         // Captura os valores dos campos
-        const nome  = NomePasta.value.trim();
+        const nome  = inputNomePasta.value.trim();
 
         // Envia POST para o servidor salvar a nova pasta no banco SQLite
         fetch('/pastas', {
@@ -1230,16 +1298,16 @@ export function initModalNovaPasta(options = {}) {
             ordenarPastas();
 
             // Limpa os campos do formulário para uma próxima criação
-            NomePasta.value = '';
+            inputNomePasta.value = '';
             if (!isComercial) {
-                CpfFFuncionario.value = '';
-                Cargo.value = '__';
-                Setor.value = '__';
-                if (DataNascimento) DataNascimento.value = '';
+                inputCpfFuncionario.value = '';
+                selectCargo.value = '__';
+                selectSetor.value = '__';
+                if (inputDataNascimento) inputDataNascimento.value = '';
             } else {
-                if (CpfFFuncionario) CpfFFuncionario.value = '';
-                if (Captacao) Captacao.value = '__';
-                if (Parceiro) Parceiro.value = '__';
+                if (inputCpfFuncionario) inputCpfFuncionario.value = '';
+                if (selectCaptacao) selectCaptacao.value = '__';
+                if (selectParceiro) selectParceiro.value = '__';
             }
 
             // Fecha o modal de criação
@@ -1249,7 +1317,7 @@ export function initModalNovaPasta(options = {}) {
         })
         .catch(err => {
             console.error('Erro ao criar pasta:', err);
-            alert('Erro ao criar pasta. Tente novamente.');
+            mostrarAviso('Erro ao criar pasta. Tente novamente.', 'erro');
         });
     });
 
@@ -1280,7 +1348,7 @@ export function initModalNovaPasta(options = {}) {
         const infoEl = document.createElement('div');
         infoEl.classList.add('pasta-info');
         if (isComercial) {
-            // CPF + captação + parceiro para o módulo Comercial
+            // CPF + captação + selectParceiro para o módulo Comercial
             const cpfFmt = mascaraCpf(dados.cpf);
             infoEl.textContent = [
                 cpfFmt         ? 'CPF: ' + cpfFmt              : '',
@@ -1379,11 +1447,11 @@ export function initModalNovaPasta(options = {}) {
 
     // ──────────────────────────────────────────────────────────────
     // FUNÇÃO: atualizarStats
-    // Busca o total de pastas e as criadas hoje no servidor
-    // e preenche os cards de resumo no topo da página.
-    // Funciona apenas quando os elementos existem no HTML
-    // (Módulo Comercial) — no módulo RH os elementos não existembarra de pesquisa
-    // e a função retorna silenciosamente.
+    // Busca totais no servidor e atualiza os cards de resumo no topo.
+    // Detecta automaticamente o módulo pelo conjunto de IDs presentes:
+    //   RH       → cardTotalFuncionarios, cardAniversarios, cardFaltas
+    //   Comercial → cardTotalPastas, cardHojePastas
+    // Se nenhum card existir na página, retorna silenciosamente.
     // ──────────────────────────────────────────────────────────────
     function atualizarStats() {
         // Tenta os IDs do módulo RH (3 cards)
@@ -1434,7 +1502,7 @@ export function initModalNovaPasta(options = {}) {
                 const raw = await r.json();
                 const lista = Array.isArray(raw) ? raw : (raw.pastas || []);
                 if (!lista.length) {
-                    alert('Nenhum funcionário cadastrado para exportar.');
+                    mostrarAviso('Nenhum funcionário cadastrado para exportar.', 'aviso');
                     return;
                 }
                 const fmt = iso => {
@@ -1462,7 +1530,7 @@ export function initModalNovaPasta(options = {}) {
                 const hoje = new Date().toISOString().slice(0, 10);
                 XLSX.writeFile(wb, `funcionarios_${hoje}.xlsx`);
             } catch {
-                alert('Erro ao exportar funcionários. Tente novamente.');
+                mostrarAviso('Erro ao exportar funcionários. Tente novamente.', 'erro');
             }
         });
     }
@@ -1674,18 +1742,18 @@ export function initModalNovaPasta(options = {}) {
                 const inicio = inputExportInicio.value;
                 const fim    = inputExportFim.value;
                 if (!inicio || !fim) {
-                    alert('Selecione a data de início e a data de fim.');
+                    mostrarAviso('Selecione a data de início e a data de fim.', 'aviso');
                     return;
                 }
                 if (inicio > fim) {
-                    alert('A data de início deve ser anterior à data de fim.');
+                    mostrarAviso('A data de início deve ser anterior à data de fim.', 'aviso');
                     return;
                 }
                 try {
                     const r = await fetch(`/registros-falta?inicio=${inicio}&fim=${fim}`);
                     const dados = await r.json();
                     if (!dados.length) {
-                        alert('Nenhuma falta encontrada nesse período.');
+                        mostrarAviso('Nenhuma falta encontrada nesse período.', 'aviso');
                         return;
                     }
                     // Agrupa os registros por pessoa
@@ -1739,7 +1807,7 @@ export function initModalNovaPasta(options = {}) {
                     XLSX.writeFile(wb, nomeArquivo);
                     formExportarFaltas.classList.add('hidden');
                 } catch {
-                    alert('Erro ao exportar. Tente novamente.');
+                    mostrarAviso('Erro ao exportar. Tente novamente.', 'erro');
                 }
             });
         }
@@ -1780,7 +1848,7 @@ export function initModalNovaPasta(options = {}) {
                 const temAtestado = document.querySelector('input[name="temAtestado"]:checked')?.value === 'sim';
 
                 if (!pasta_id) {
-                    alert('Selecione um funcionário.');
+                    mostrarAviso('Selecione um funcionário.', 'aviso');
                     return;
                 }
 
@@ -1789,7 +1857,7 @@ export function initModalNovaPasta(options = {}) {
                 if (temAtestado) {
                     const dias = parseInt(inputAtestadoDias.value, 10);
                     if (!inputAtestadoInicio.value || !dias || dias < 1) {
-                        alert('Preencha a data de início e a quantidade de dias do atestado.');
+                        mostrarAviso('Preencha a data de início e a quantidade de dias do atestado.', 'aviso');
                         return;
                     }
                     const inicio = new Date(inputAtestadoInicio.value + 'T00:00:00');
@@ -1801,7 +1869,7 @@ export function initModalNovaPasta(options = {}) {
                     body.data_falta      = toISO(inicio); // usa início como data referência
                 } else {
                     if (!inputDataFalta.value) {
-                        alert('Preencha a data da falta.');
+                        mostrarAviso('Preencha a data da falta.', 'aviso');
                         return;
                     }
                     body.data_falta = inputDataFalta.value;
@@ -1822,9 +1890,28 @@ export function initModalNovaPasta(options = {}) {
                     const elFaltasMes = document.getElementById('uploadInfoFaltasMes');
                     if (pastaSelecionada && elFaltasMes) atualizarFaltasMesPasta(pastaSelecionada.id, elFaltasMes);
                 } catch {
-                    alert('Erro ao salvar falta. Tente novamente.');
+                    mostrarAviso('Erro ao salvar falta. Tente novamente.', 'erro');
                 }
             });
         }
+    }
+
+    // ── Modal de preview de arquivo – fechar ─────────────────────────────
+    const modalPreview       = document.getElementById('modalPreview');
+    const btnPreviewFechar   = document.getElementById('modalPreviewFechar');
+    if (modalPreview) {
+        if (btnPreviewFechar) {
+            btnPreviewFechar.addEventListener('click', () => modalPreview.classList.add('hidden'));
+        }
+        // Clique no fundo escuro também fecha
+        modalPreview.addEventListener('click', (e) => {
+            if (e.target === modalPreview) modalPreview.classList.add('hidden');
+        });
+        // Tecla Escape fecha
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modalPreview.classList.contains('hidden')) {
+                modalPreview.classList.add('hidden');
+            }
+        });
     }
 }

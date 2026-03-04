@@ -1809,3 +1809,158 @@ body {
 .card-placeholder .card-value {
     display: none;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Popup de notificação (substitui alert())
+   Aparece na base da tela, auto-fecha em 3,5 s.
+   ════════════════════════════════════════════════════════════ */
+.popup-aviso {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    padding: 12px 26px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.45);
+    z-index: 10100;
+    animation: toastSlide 0.25s ease;
+    max-width: 90vw;
+    text-align: center;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+}
+.popup-aviso--oculto {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px);
+    pointer-events: none;
+}
+.popup-aviso--aviso  { background: #6b5200; border: 1px solid rgb(200,144,1); }
+.popup-aviso--erro   { background: #6b1a1a; border: 1px solid #d94f4f; }
+.popup-aviso--sucesso { background: #1a6b3a; border: 1px solid #3dba77; }
+
+/* ══════════════════════════════════════════════════════════════
+   Modal de pré-visualização de arquivo
+   Overlay escuro com caixa centralizada.
+   ════════════════════════════════════════════════════════════ */
+#modalPreview {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.82);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 16px;
+}
+#modalPreview.hidden { display: none; }
+
+#modalPreviewBox {
+    background: #1e1e1e;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    width: 92vw;
+    max-width: 1000px;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.7);
+}
+
+#modalPreviewHeader {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    background: #161616;
+    flex-shrink: 0;
+}
+
+#modalPreviewNome {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#modalPreviewAbrir {
+    background: transparent;
+    border: 1px solid rgba(252,172,1,0.6);
+    color: rgb(252,172,1);
+    border-radius: 6px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s, color 0.2s;
+    flex-shrink: 0;
+}
+#modalPreviewAbrir:hover {
+    background: rgb(252,172,1);
+    color: #111;
+}
+
+#modalPreviewFechar {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.6);
+    border-radius: 6px;
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s, color 0.2s;
+}
+#modalPreviewFechar:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
+
+#modalPreviewConteudo {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #111;
+    min-height: 200px;
+}
+
+.preview-imagem {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    display: block;
+}
+
+.preview-iframe {
+    width: 100%;
+    height: 75vh;
+    border: none;
+    display: block;
+}
+
+.preview-video {
+    max-width: 100%;
+    max-height: 75vh;
+    display: block;
+}
+
+.preview-sem-suporte {
+    text-align: center;
+    color: rgba(255,255,255,0.5);
+    padding: 40px 24px;
+    font-size: 14px;
+}

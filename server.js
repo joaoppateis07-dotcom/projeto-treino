@@ -2,7 +2,6 @@
 const { createClient } = require("@libsql/client");
 const cloudinaryLib = require("cloudinary");
 const http    = require("http");
-const https   = require("https");
 const path    = require("path");
 const fs      = require("fs");
 const { Readable } = require("stream");
@@ -196,13 +195,43 @@ app.use((req, res, next) => {
 
 app.use(express.static(path.join(__dirname, "public")));
 
+// ── HTML servido após login bem-sucedido ─────────────────────────────────────
+// Exibe um spinner por 1,2 s e redireciona para a seleção de módulo.
+// Separado da rota para facilitar leitura e manutenção futura.
+const HTML_LOGIN_REDIRECT = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autenticando…</title>
+  <style>
+    body { font-family: Arial, sans-serif; display: flex; justify-content: center;
+           align-items: center; min-height: 100vh; margin: 0; background: #f5f5f5; }
+    .loading { text-align: center; }
+    .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #333;
+               border-radius: 50%; width: 40px; height: 40px;
+               animation: spin 1s linear infinite; margin: 20px auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="loading">
+    <div class="spinner"></div>
+    <p>Autenticando…</p>
+  </div>
+  <script>setTimeout(() => { window.location = "/html/select.html"; }, 1200);</script>
+</body>
+</html>`;
+
 // ── Autenticacao ───────────────────────────────────────────────────────────────
 app.post("/login", (req, res) => {
   const username = req.body.username || req.body.usuario || "";
   const password = req.body.password || req.body.senha   || "";
-  if (username === "Maria Pateis" && password === "UpConsult@25") {
+  const validUser = process.env.LOGIN_USER || "Maria Pateis";
+  const validPass = process.env.LOGIN_PASS || "UpConsult@25";
+  if (username === validUser && password === validPass) {
     res.cookie("logado", "true", { maxAge: 24*60*60*1000, httpOnly: false, path: "/", sameSite: "lax" });
-    return res.status(200).send(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Autenticando...</title><style>body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#f5f5f5}.loading{text-align:center}.spinner{border:4px solid #f3f3f3;border-top:4px solid #333;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;margin:20px auto}@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style></head><body><div class="loading"><div class="spinner"></div><p>Autenticando...</p></div><script>setTimeout(()=>{window.location="/html/select.html"},1200)</script></body></html>`);
+    return res.status(200).send(HTML_LOGIN_REDIRECT);
   }
   return res.redirect("/?login=failed");
 });
@@ -515,10 +544,19 @@ app.get(/^\/.*/, (req, res) => {
   return res.status(404).end();
 });
 
-// ── Inicia servidor ────────────────────────────────────────────────────────────
-inicializarDB()
-  .then(() => {
-    const server = http.createServer(app);
-    server.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
-  })
-  .catch(err => { console.error("Falha ao inicializar banco:", err); process.exit(1); });
+// ── Exporta para uso como módulo em projeto maior ─────────────────────────────
+// Um projeto pai pode fazer: const { app, db, inicializarDB } = require('./server')
+// e montar o sub-app: pai.use('/rh', app)
+module.exports = { app, db, inicializarDB };
+
+// ── Inicia o servidor apenas quando executado diretamente ────────────────────
+// node server.js   → sobe o HTTP listener na porta PORT
+// require('./server') → só exporta, sem abrir porta nenhuma
+if (require.main === module) {
+  inicializarDB()
+    .then(() => {
+      const server = http.createServer(app);
+      server.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+    })
+    .catch(err => { console.error("Falha ao inicializar banco:", err); process.exit(1); });
+}

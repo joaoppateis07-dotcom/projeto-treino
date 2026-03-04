@@ -377,6 +377,21 @@
     </div>
   </div>
 
+  <!-- Popup de notificação (substitui alert()) -->
+  <div id="popupAviso" class="popup-aviso popup-aviso--oculto"></div>
+
+  <!-- Modal de pré-visualização de arquivo -->
+  <div id="modalPreview" class="hidden">
+    <div id="modalPreviewBox">
+      <div id="modalPreviewHeader">
+        <span id="modalPreviewNome"></span>
+        <button id="modalPreviewAbrir">Abrir ↗</button>
+        <button id="modalPreviewFechar">✕</button>
+      </div>
+      <div id="modalPreviewConteudo"></div>
+    </div>
+  </div>
+
   <!-- SheetJS para exportação de planilhas Excel -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <!-- Script principal carregado como módulo ES6. -->
