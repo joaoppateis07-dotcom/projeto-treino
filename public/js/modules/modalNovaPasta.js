@@ -346,6 +346,10 @@ export function initModalNovaPasta(options = {}) {
         // Exibe o modal removendo a classe 'hidden'
         modalUpload.classList.remove('hidden');
 
+        // Transforma o slot da pasta em um "buraco negro" enquanto o modal está aberto
+        const cardAberto = listaPastas.querySelector(`.pasta[data-id="${dados.id}"]`);
+        if (cardAberto) cardAberto.classList.add('pasta-void');
+
         // Carrega os arquivos salvos no servidor para esta pasta (raiz)
         carregarArquivos(dados.id);
         // Carrega as subpastas desta pasta
@@ -353,6 +357,18 @@ export function initModalNovaPasta(options = {}) {
     }
 
     function fecharModalUpload() {
+        // Anima a pasta sendo "sugada" de volta para o seu slot vazio
+        if (pastaSelecionada) {
+            const cardVoid = listaPastas.querySelector(`.pasta[data-id="${pastaSelecionada.id}"]`);
+            if (cardVoid) {
+                cardVoid.classList.remove('pasta-void', 'selecionada');
+                cardVoid.classList.add('pasta-suck-in');
+                cardVoid.addEventListener('animationend', () => {
+                    cardVoid.classList.remove('pasta-suck-in');
+                }, { once: true });
+            }
+        }
+
         modalUpload.classList.add('hidden');
         // Reseta estado de alterações
         alteracoes = false;
