@@ -130,3 +130,75 @@ body {
 .hidden {
   display: none;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   ANIMAÇÕES DINÂMICAS — Login
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes loginCardEntrada {
+  0%   { opacity: 0; transform: translateY(40px) scale(0.94); filter: blur(6px); }
+  60%  { filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@keyframes logoFlutuar {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-9px); }
+}
+
+@keyframes logoGlow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(200,144,1,0.35)); }
+  50%      { filter: drop-shadow(0 0 22px rgba(200,144,1,0.68)); }
+}
+
+@keyframes fieldEntrada {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes subtitleEntrada {
+  from { opacity: 0; letter-spacing: 8px; }
+  to   { opacity: 1; letter-spacing: normal; }
+}
+
+/* Aplica animação de entrada ao card de login */
+.card {
+  animation: loginCardEntrada 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Logo flutuante com brilho dourado pulsante */
+.logo {
+  animation: logoFlutuar 4s ease-in-out infinite,
+             logoGlow    3.5s ease-in-out infinite;
+}
+.logo-svg {
+  animation: logoFlutuar 4s ease-in-out infinite;
+}
+
+/* Subtítulo com entrada de letras expandindo */
+.subtitle {
+  animation: subtitleEntrada 0.55s 0.3s ease both;
+}
+
+/* Campos entram escalonados de baixo para cima */
+.field:nth-of-type(1) { animation: fieldEntrada 0.4s 0.25s ease both; }
+.field:nth-of-type(2) { animation: fieldEntrada 0.4s 0.38s ease both; }
+
+/* Hint e botão entram após os campos */
+.hint { animation: fieldEntrada 0.4s 0.45s ease both; }
+.btn  { animation: fieldEntrada 0.4s 0.42s ease both; }
+
+/* Feedback de pressão no botão */
+.btn:active {
+  transform: scale(0.96) translateY(1px) !important;
+  box-shadow: 0 2px 8px rgba(200,144,1,0.15) !important;
+  transition-duration: 60ms !important;
+}
+
+/* Transição mais suave no focus do input */
+.input {
+  transition: box-shadow 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+}
+.input:focus {
+  animation: none;
+}

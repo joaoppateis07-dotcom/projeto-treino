@@ -1964,3 +1964,181 @@ body {
     padding: 40px 24px;
     font-size: 14px;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   ANIMAÇÕES DINÂMICAS — Sistema
+   ══════════════════════════════════════════════════════════════ */
+
+/* Modal: caixa central entra com scale + fade + blur */
+@keyframes modalBoxEntrada {
+    0%   { opacity: 0; transform: scale(0.90) translateY(28px); filter: blur(6px); }
+    60%  { filter: blur(0); }
+    100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+}
+
+/* Overlay: fundo escuro aparece com fade */
+@keyframes overlayFade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Itens de lista: deslizam da esquerda */
+@keyframes itemEntrada {
+    from { opacity: 0; transform: translateX(-16px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Subpastas: entram com efeito spring (quicam levemente) */
+@keyframes subpastaSpring {
+    0%   { opacity: 0; transform: scale(0.75) translateY(14px); }
+    70%  { transform: scale(1.05) translateY(-3px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Drag-over: borda pulsa enquanto arquivo está sobre a área */
+@keyframes dragOverPulse {
+    0%, 100% {
+        border-color: rgba(200,144,1,0.7);
+        box-shadow: 0 0 0 3px rgba(200,144,1,0.15);
+    }
+    50% {
+        border-color: rgb(200,144,1);
+        box-shadow: 0 0 0 8px rgba(200,144,1,0.06);
+    }
+}
+
+/* Pasta recém-criada: destaque dourado piscando */
+@keyframes pastaDestaque {
+    0%   { box-shadow: 0 0 0 0 rgba(200,144,1,0.7); }
+    70%  { box-shadow: 0 0 0 12px rgba(200,144,1,0); }
+    100% { box-shadow: 0 0 0 0 rgba(200,144,1,0); }
+}
+
+/* Toast: já tem toastSlide, adicionando variante suave */
+@keyframes toastEntrar {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.95); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0)     scale(1);    }
+}
+
+/* ── Aplicações ─────────────────────────────────────────────── */
+
+/* Caixa dos modais com entrada fluída */
+.modal-box {
+    animation: modalBoxEntrada 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.modal-box-upload {
+    animation: modalBoxEntrada 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+#modalAniversariosBox {
+    animation: modalBoxEntrada 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+#modalFaltasBox {
+    animation: modalBoxEntrada 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+#modalPreviewBox {
+    animation: modalBoxEntrada 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Overlays escuros com fade */
+#modalNovaPasta,
+#modalUpload,
+#modalFaltas,
+#modalAniversarios,
+#modalPreview {
+    animation: overlayFade 0.25s ease both;
+}
+
+/* Itens de arquivo entram deslizando da esquerda */
+.arquivo-item {
+    animation: itemEntrada 0.28s ease both;
+}
+
+/* Itens de falta com leve atraso escalonado */
+.falta-item {
+    animation: itemEntrada 0.28s ease both;
+}
+
+/* Itens de aniversariante */
+.aniver-item {
+    animation: itemEntrada 0.28s ease both;
+}
+
+/* Subpastas entram com efeito spring */
+.subpasta-card {
+    animation: subpastaSpring 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Drag-over com pulso animado */
+#uploadArea.drag-over {
+    animation: dragOverPulse 1.1s ease-in-out infinite;
+    background: rgba(200,144,1,0.04);
+}
+
+/* Botão: feedback visual de pressão */
+.btn:active {
+    transform: scale(0.95) translateY(1px) !important;
+    box-shadow: 0 1px 6px rgba(200,144,1,0.15) !important;
+    transition-duration: 60ms !important;
+}
+
+/* Stat card: valor fica dourado ao passar o mouse */
+.card:hover .card-value {
+    color: rgb(200,144,1);
+    transition: color 0.3s ease;
+}
+
+/* Module select: transição spring mais dinâmica */
+.module-select-btn {
+    transition:
+        transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.25s ease,
+        border-color 0.25s ease,
+        background 0.25s ease;
+}
+
+/* Nav buttons: transição mais suave */
+.btn-nav {
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease,
+        transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Pasta selecionada: entrada com destaque pulsante */
+.pasta.selecionada {
+    animation: pastaDestaque 0.6s ease;
+}
+
+/* Toast de notificações com entrada melhorada */
+.popup-aviso {
+    animation: toastEntrar 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Toast de desfazer */
+.toast-undo {
+    animation: toastEntrar 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Breadcrumb aparece com fade + slide */
+@keyframes breadcrumbEntrada {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+#breadcrumb {
+    animation: breadcrumbEntrada 0.25s ease both;
+}
+
+/* Barra de pesquisa com entrada suave */
+@keyframes barraEntrada {
+    from { opacity: 0; transform: scaleX(0.96); }
+    to   { opacity: 1; transform: scaleX(1); }
+}
+#barraPesquisa {
+    animation: barraEntrada 0.3s 0.1s ease both;
+    transform-origin: left center;
+}

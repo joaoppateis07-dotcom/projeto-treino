@@ -21,6 +21,7 @@ Sistema web para gestão de pastas e documentos de funcionários/clientes, com d
 CREATE DATABASE gerenciador_pastas CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
+
 > As tabelas são criadas automaticamente pelo servidor na primeira execução.
 
 ### 3. Configurar variáveis de ambiente
